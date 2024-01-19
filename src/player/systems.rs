@@ -1,4 +1,6 @@
-use super::{components::*, PLAYER_SIZE, PLAYER_SPEED};
+use std::f32::consts::PI;
+
+use super::{components::*, PLAYER_ACCELERATION, PLAYER_MAX_SPEED, PLAYER_SIZE};
 use crate::{
     asteroid::{components::Asteroid, ASTEROID_SIZE},
     events::GameOver,
@@ -20,41 +22,49 @@ pub fn spawn_player(
             texture: asset_server.load("images/sprites/playerShip1_red.png"),
             ..default()
         },
-        Player {},
+        Player {
+            direction: Vec2::new(0.0, 1.0),
+            velocity: Vec2::ZERO,
+        },
     ));
 }
 
-pub fn player_movement(
+pub fn player_input(
     keyboard_input: Res<Input<KeyCode>>,
-    mut player_query: Query<&mut Transform, With<Player>>,
+    mut player_query: Query<&mut Player>,
     time: Res<Time>,
 ) {
-    if let Ok(mut transform) = player_query.get_single_mut() {
-        let mut direction = Vec3::ZERO;
-
-        let mut multiplier = 1.0;
-
+    if let Ok(mut player) = player_query.get_single_mut() {
         if keyboard_input.pressed(KeyCode::Left) || keyboard_input.pressed(KeyCode::A) {
-            direction += Vec3::new(-1.0, 0.0, 0.0);
+            player.direction = player.direction.rotate(Vec2::from_angle(PI / 32.0));
         }
         if keyboard_input.pressed(KeyCode::Right) || keyboard_input.pressed(KeyCode::D) {
-            direction += Vec3::new(1.0, 0.0, 0.0);
+            player.direction = player.direction.rotate(Vec2::from_angle(-PI / 32.0));
         }
         if keyboard_input.pressed(KeyCode::Up) || keyboard_input.pressed(KeyCode::W) {
-            direction += Vec3::new(0.0, 1.0, 0.0);
+            let v = player.direction * PLAYER_ACCELERATION * time.delta_seconds();
+            player.velocity += v;
+            player.velocity = player.velocity.clamp_length_max(PLAYER_MAX_SPEED);
         }
+
         if keyboard_input.pressed(KeyCode::Down) || keyboard_input.pressed(KeyCode::S) {
-            direction += Vec3::new(0.0, -1.0, 0.0);
+            let v = player.direction * PLAYER_ACCELERATION * time.delta_seconds();
+            player.velocity -= v;
+            player.velocity = player.velocity.clamp_length_max(PLAYER_MAX_SPEED);
         }
-        if keyboard_input.pressed(KeyCode::Space) {
-            multiplier = 2.0;
-        }
+    }
+}
 
-        if direction.length() > 0.0 {
-            direction = direction.normalize();
-        }
+pub fn player_movement(
+    mut player_query: Query<(&Player, &mut Transform), With<Player>>,
+    time: Res<Time>,
+) {
+    if let Ok((player, mut transform)) = player_query.get_single_mut() {
+        transform.translation +=
+            Vec3::new(player.velocity.x, player.velocity.y, 0.0) * time.delta_seconds();
 
-        transform.translation += direction * PLAYER_SPEED * time.delta_seconds() * multiplier;
+        transform.rotation =
+            Quat::from_rotation_z(player.direction.y.atan2(player.direction.x) - PI / 2.0);
     }
 }
 
