@@ -4,6 +4,7 @@ use super::{components::*, PLAYER_ACCELERATION, PLAYER_MAX_SPEED, PLAYER_SIZE};
 use crate::{
     asteroid::{components::Asteroid, ASTEROID_SIZE},
     events::GameOver,
+    laser::events::SpawnLaser,
     score::resources::Score,
     star::{components::Star, STAR_SIZE},
 };
@@ -30,11 +31,12 @@ pub fn spawn_player(
 }
 
 pub fn player_input(
+    mut spawn_laser_writer: EventWriter<SpawnLaser>,
+    mut player_query: Query<(&mut Player, &Transform), With<Player>>,
     keyboard_input: Res<Input<KeyCode>>,
-    mut player_query: Query<&mut Player>,
     time: Res<Time>,
 ) {
-    if let Ok(mut player) = player_query.get_single_mut() {
+    if let Ok((mut player, transform)) = player_query.get_single_mut() {
         if keyboard_input.pressed(KeyCode::Left) || keyboard_input.pressed(KeyCode::A) {
             player.direction = player.direction.rotate(Vec2::from_angle(PI / 32.0));
         }
@@ -51,6 +53,14 @@ pub fn player_input(
             let v = player.direction * PLAYER_ACCELERATION * time.delta_seconds();
             player.velocity -= v;
             player.velocity = player.velocity.clamp_length_max(PLAYER_MAX_SPEED);
+        }
+
+        if keyboard_input.just_pressed(KeyCode::Space) {
+            spawn_laser_writer.send(SpawnLaser {
+                x: transform.translation.x,
+                y: transform.translation.y,
+                direction: player.direction,
+            });
         }
     }
 }
