@@ -20,6 +20,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_event::<GameOver>()
+        .add_systems(Startup, (spawn_camera, spawn_background))
         .add_plugins((
             AsteroidPlugin,
             PlayerPlugin,
@@ -27,7 +28,6 @@ fn main() {
             StarPlugin,
             LaserPlugin,
         ))
-        .add_systems(Startup, spawn_camera)
         .add_systems(Update, (exit_game, handle_game_over))
         .run();
 }

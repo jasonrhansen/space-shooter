@@ -22,3 +22,27 @@ pub fn spawn_camera(mut commands: Commands, window_query: Query<&Window, With<Pr
         ..default()
     });
 }
+
+#[derive(Component)]
+struct Background;
+
+pub fn spawn_background(
+    mut commands: Commands,
+    window_query: Query<&Window, With<PrimaryWindow>>,
+    asset_server: Res<AssetServer>,
+) {
+    let window = window_query.get_single().unwrap();
+
+    commands.spawn((
+        SpriteBundle {
+            transform: Transform::from_xyz(window.width() / 2.0, window.height() / 2.0, -10.0),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(window.width(), window.height())),
+                ..default()
+            },
+            texture: asset_server.load("images/backgrounds/darkPurple.png"),
+            ..default()
+        },
+        Background {},
+    ));
+}
