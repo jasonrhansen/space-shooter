@@ -83,7 +83,7 @@ pub fn spawn_stars_over_time(
         commands.spawn((
             SpriteBundle {
                 transform: Transform::from_xyz(random_x, random_y, 0.0),
-                texture: asset_server.load("images/sprites/star.png"),
+                texture: asset_server.load("images/sprites/star_gold.png"),
                 ..default()
             },
             Star {},
