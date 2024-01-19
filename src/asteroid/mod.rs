@@ -6,7 +6,7 @@ pub mod systems;
 use systems::*;
 
 pub const NUM_ASTEROIDS: usize = 4;
-pub const ASTEROID_SPEED: f32 = 200.0;
+pub const ASTEROID_SPEED: f32 = 20.0;
 pub const ASTEROID_SIZE: f32 = 64.0;
 
 pub struct AsteroidPlugin;
@@ -18,7 +18,7 @@ impl Plugin for AsteroidPlugin {
             ((
                 asteroid_movement,
                 update_asteroid_direction,
-                confine_asteroid_movement,
+                wrap_asteroid_movement,
             )
                 .chain(),),
         );

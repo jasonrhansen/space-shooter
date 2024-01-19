@@ -78,29 +78,29 @@ pub fn player_movement(
     }
 }
 
-pub fn confine_player_movement(
+pub fn wrap_player_movement(
     mut player_query: Query<&mut Transform, With<Player>>,
     window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
     let window = window_query.get_single().unwrap();
 
     let half_player_size = PLAYER_SIZE / 2.0;
-    let x_min = half_player_size;
-    let x_max = window.width() - half_player_size;
-    let y_min = half_player_size;
-    let y_max = window.height() - half_player_size;
+    let x_min = -half_player_size;
+    let x_max = window.width() + half_player_size;
+    let y_min = -half_player_size;
+    let y_max = window.height() + half_player_size;
 
     if let Ok(mut transform) = player_query.get_single_mut() {
         if transform.translation.x < x_min {
-            transform.translation.x = x_min;
+            transform.translation.x = x_max - 1.0;
         } else if transform.translation.x > x_max {
-            transform.translation.x = x_max;
+            transform.translation.x = x_min + 1.0;
         }
 
         if transform.translation.y < y_min {
-            transform.translation.y = y_min;
+            transform.translation.y = y_max - 1.0;
         } else if transform.translation.y > y_max {
-            transform.translation.y = y_max;
+            transform.translation.y = y_min + 1.0;
         }
     }
 }

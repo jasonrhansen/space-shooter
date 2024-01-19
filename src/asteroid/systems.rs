@@ -13,13 +13,13 @@ pub fn spawn_asteroids(
 ) {
     let window = window_query.get_single().unwrap();
 
-    for _ in 0..NUM_ASTEROIDS {
+    for i in 1..=NUM_ASTEROIDS {
         let random_x = random::<f32>() * window.width();
         let random_y = random::<f32>() * window.height();
         commands.spawn((
             SpriteBundle {
                 transform: Transform::from_xyz(random_x, random_y, 0.0),
-                texture: asset_server.load("images/sprites/meteorBrown_big1.png"),
+                texture: asset_server.load(format!("images/sprites/meteorGrey_big{i}.png")),
                 ..default()
             },
             Asteroid {
@@ -67,29 +67,29 @@ pub fn update_asteroid_direction(
     }
 }
 
-pub fn confine_asteroid_movement(
+pub fn wrap_asteroid_movement(
     mut asteroid_query: Query<&mut Transform, With<Asteroid>>,
     window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
     let window = window_query.get_single().unwrap();
 
     let half_asteroid_size = ASTEROID_SIZE / 2.0;
-    let x_min = half_asteroid_size;
-    let x_max = window.width() - half_asteroid_size;
-    let y_min = half_asteroid_size;
-    let y_max = window.height() - half_asteroid_size;
+    let x_min = -half_asteroid_size;
+    let x_max = window.width() + half_asteroid_size;
+    let y_min = -half_asteroid_size;
+    let y_max = window.height() + half_asteroid_size;
 
     for mut transform in asteroid_query.iter_mut() {
         if transform.translation.x < x_min {
-            transform.translation.x = x_min;
+            transform.translation.x = x_max - 1.0;
         } else if transform.translation.x > x_max {
-            transform.translation.x = x_max;
+            transform.translation.x = x_min + 1.0;
         }
 
         if transform.translation.y < y_min {
-            transform.translation.y = y_min;
+            transform.translation.y = y_max - 1.0;
         } else if transform.translation.y > y_max {
-            transform.translation.y = y_max;
+            transform.translation.y = y_min + 1.0;
         }
     }
 }
