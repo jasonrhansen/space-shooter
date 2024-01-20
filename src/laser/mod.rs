@@ -18,7 +18,7 @@ impl Plugin for LaserPlugin {
         app.add_event::<SpawnLaser>().add_systems(
             Update,
             (
-                (laser_movement, despawn_offscreen_lasers).chain(),
+                (laser_movement, laser_hit_asteroid, despawn_offscreen_lasers).chain(),
                 spawn_lasers,
             ),
         );

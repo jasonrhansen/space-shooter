@@ -5,7 +5,7 @@ pub mod systems;
 
 use systems::*;
 
-pub const PLAYER_SIZE: f32 = 64.0;
+pub const PLAYER_SIZE: f32 = 75.0;
 pub const PLAYER_MAX_SPEED: f32 = 800.0;
 pub const PLAYER_ACCELERATION: f32 = 400.0;
 

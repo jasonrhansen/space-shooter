@@ -22,7 +22,7 @@ pub fn spawn_stars(
         let random_y = random::<f32>() * window.height();
         commands.spawn((
             SpriteBundle {
-                transform: Transform::from_xyz(random_x, random_y, 0.0),
+                transform: Transform::from_xyz(random_x, random_y, -9.0),
                 texture: asset_server.load("images/sprites/star_gold.png"),
                 ..default()
             },
@@ -82,7 +82,7 @@ pub fn spawn_stars_over_time(
         let random_y = random::<f32>() * window.height();
         commands.spawn((
             SpriteBundle {
-                transform: Transform::from_xyz(random_x, random_y, 0.0),
+                transform: Transform::from_xyz(random_x, random_y, -9.0),
                 texture: asset_server.load("images/sprites/star_gold.png"),
                 ..default()
             },

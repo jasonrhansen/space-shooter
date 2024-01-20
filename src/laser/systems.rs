@@ -2,6 +2,9 @@ use std::f32::consts::PI;
 
 use bevy::{prelude::*, window::PrimaryWindow};
 
+use crate::asteroid::components::Asteroid;
+use crate::asteroid::ASTEROID_SIZE;
+
 use super::components::*;
 use super::events::SpawnLaser;
 use super::LASER_SIZE;
@@ -13,7 +16,7 @@ pub fn spawn_lasers(
     asset_server: Res<AssetServer>,
 ) {
     event_reader.read().take(1).for_each(|spawn_laser| {
-        let transform = Transform::from_xyz(spawn_laser.x, spawn_laser.y, 0.0).with_rotation(
+        let transform = Transform::from_xyz(spawn_laser.x, spawn_laser.y, -1.0).with_rotation(
             Quat::from_rotation_z(
                 spawn_laser.direction.y.atan2(spawn_laser.direction.x) - PI / 2.0,
             ),
@@ -83,6 +86,26 @@ pub fn despawn_offscreen_lasers(
             || transform.translation.y > y_max
         {
             commands.entity(entity).despawn();
+        }
+    }
+}
+
+pub fn laser_hit_asteroid(
+    mut commands: Commands,
+    laser_query: Query<(Entity, &Transform), With<Laser>>,
+    asteroid_query: Query<&Transform, With<Asteroid>>,
+) {
+    if let Ok((laser_entity, laser_transform)) = laser_query.get_single() {
+        let laser_radius = LASER_SIZE / 2.0;
+        let asteroid_radius = ASTEROID_SIZE / 2.0;
+
+        for asteroid_transform in asteroid_query.iter() {
+            let distance = laser_transform
+                .translation
+                .distance(asteroid_transform.translation);
+            if distance < laser_radius + asteroid_radius {
+                commands.entity(laser_entity).despawn();
+            }
         }
     }
 }

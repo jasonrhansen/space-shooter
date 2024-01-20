@@ -6,8 +6,8 @@ pub mod systems;
 use systems::*;
 
 pub const NUM_ASTEROIDS: usize = 4;
-pub const ASTEROID_SPEED: f32 = 20.0;
-pub const ASTEROID_SIZE: f32 = 64.0;
+pub const ASTEROID_SPEED: f32 = 50.0;
+pub const ASTEROID_SIZE: f32 = 100.0;
 
 pub struct AsteroidPlugin;
 
