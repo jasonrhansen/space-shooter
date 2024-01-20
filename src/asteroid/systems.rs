@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use bevy::{prelude::*, window::PrimaryWindow};
 use rand::prelude::*;
 
@@ -24,6 +26,7 @@ pub fn spawn_asteroids(
             },
             Asteroid {
                 direction: Vec2::new(random::<f32>(), random::<f32>()).normalize(),
+                rotation_speed: random::<f32>() * PI - PI,
             },
         ));
     }
@@ -36,6 +39,9 @@ pub fn asteroid_movement(
     for (mut transform, asteroid) in asteroid_query.iter_mut() {
         let direction = Vec3::new(asteroid.direction.x, asteroid.direction.y, 0.0);
         transform.translation += direction * ASTEROID_SPEED * time.delta_seconds();
+        transform.rotate(Quat::from_rotation_z(
+            asteroid.rotation_speed * time.delta_seconds(),
+        ));
     }
 }
 
