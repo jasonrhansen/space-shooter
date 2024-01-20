@@ -3,12 +3,6 @@ use bevy::prelude::*;
 use super::resources::*;
 use crate::events::*;
 
-pub fn update_score(score: Res<Score>) {
-    if score.is_changed() {
-        println!("Score: {}", score.value);
-    }
-}
-
 pub fn update_high_scores(
     mut game_over_reader: EventReader<GameOver>,
     mut high_scores: ResMut<HighScores>,
