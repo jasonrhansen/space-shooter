@@ -39,9 +39,6 @@ pub fn asteroid_movement(
     }
 }
 
-#[derive(Component)]
-struct SoundEffect;
-
 pub fn update_asteroid_direction(
     mut asteroid_query: Query<(&Transform, &mut Asteroid)>,
     window_query: Query<&Window, With<PrimaryWindow>>,

@@ -105,9 +105,6 @@ pub fn wrap_player_movement(
     }
 }
 
-#[derive(Component)]
-struct SoundEffect;
-
 pub fn player_hit_asteroid(
     mut commands: Commands,
     mut game_over_writer: EventWriter<GameOver>,

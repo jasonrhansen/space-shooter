@@ -16,6 +16,15 @@ pub fn spawn_lasers(
     asset_server: Res<AssetServer>,
 ) {
     event_reader.read().take(1).for_each(|spawn_laser| {
+        let sound_effect = asset_server.load("audio/sfx_laser1.ogg");
+        commands.spawn((
+            AudioBundle {
+                source: sound_effect,
+                settings: PlaybackSettings::ONCE,
+            },
+            LaserSound,
+        ));
+
         let transform = Transform::from_xyz(spawn_laser.x, spawn_laser.y, -1.0).with_rotation(
             Quat::from_rotation_z(
                 spawn_laser.direction.y.atan2(spawn_laser.direction.x) - PI / 2.0,
