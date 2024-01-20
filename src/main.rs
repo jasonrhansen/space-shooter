@@ -4,6 +4,7 @@ use bevy::prelude::*;
 pub mod asteroid;
 pub mod events;
 pub mod laser;
+pub mod osd;
 pub mod player;
 pub mod score;
 pub mod star;
@@ -11,6 +12,7 @@ pub mod systems;
 
 use events::*;
 use laser::LaserPlugin;
+use osd::OsdPlugin;
 use player::PlayerPlugin;
 use score::ScorePlugin;
 use star::StarPlugin;
@@ -27,6 +29,7 @@ fn main() {
             ScorePlugin,
             StarPlugin,
             LaserPlugin,
+            OsdPlugin,
         ))
         .add_systems(Update, (exit_game, handle_game_over))
         .run();
