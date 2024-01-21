@@ -6,6 +6,8 @@ pub mod systems;
 
 use systems::*;
 
+use crate::AppState;
+
 use self::events::SpawnLaser;
 
 pub const LASER_SPEED: f32 = 800.0;
@@ -20,7 +22,8 @@ impl Plugin for LaserPlugin {
             (
                 (laser_movement, laser_hit_asteroid, despawn_offscreen_lasers).chain(),
                 spawn_lasers,
-            ),
+            )
+                .run_if(in_state(AppState::Playing)),
         );
     }
 }

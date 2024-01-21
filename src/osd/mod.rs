@@ -5,11 +5,15 @@ pub mod systems;
 
 use systems::*;
 
+use crate::AppState;
+
 pub struct OsdPlugin;
 
 impl Plugin for OsdPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup)
-            .add_systems(Update, update_score_text);
+            .add_systems(Update, update_score_text)
+            .add_systems(OnEnter(AppState::Paused), show_paused_screen)
+            .add_systems(OnExit(AppState::Paused), remove_paused_screen);
     }
 }

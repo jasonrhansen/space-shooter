@@ -5,6 +5,8 @@ pub mod systems;
 
 use systems::*;
 
+use crate::AppState;
+
 pub const PLAYER_SIZE: f32 = 75.0;
 pub const PLAYER_MAX_SPEED: f32 = 800.0;
 pub const PLAYER_ACCELERATION: f32 = 400.0;
@@ -19,7 +21,8 @@ impl Plugin for PlayerPlugin {
                 (player_input, player_movement, wrap_player_movement).chain(),
                 player_hit_asteroid,
                 player_hit_star,
-            ),
+            )
+                .run_if(in_state(AppState::Playing)),
         );
     }
 }
