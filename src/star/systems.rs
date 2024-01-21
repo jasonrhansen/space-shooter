@@ -31,9 +31,6 @@ pub fn spawn_stars(
     }
 }
 
-#[derive(Component)]
-struct StarSound;
-
 pub fn player_hit_star(
     mut commands: Commands,
     player_query: Query<&Transform, With<Player>>,
@@ -52,13 +49,10 @@ pub fn player_hit_star(
             if distance < player_radius + star_radius {
                 score.value += 1;
 
-                commands.spawn((
-                    AudioBundle {
-                        source: asset_server.load("audio/laserLarge_000.ogg"),
-                        settings: PlaybackSettings::ONCE,
-                    },
-                    StarSound,
-                ));
+                commands.spawn(AudioBundle {
+                    source: asset_server.load("audio/laserLarge_000.ogg"),
+                    settings: PlaybackSettings::ONCE,
+                });
                 commands.entity(star_entity).despawn();
             }
         }

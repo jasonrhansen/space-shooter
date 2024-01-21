@@ -32,7 +32,7 @@ pub fn update_score_text(score: Res<Score>, mut query: Query<&mut Text, With<Sco
     }
 }
 
-pub fn spawn_paused_screen(mut commands: Commands) {
+pub fn spawn_paused_screen(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn((
             NodeBundle {
@@ -58,10 +58,26 @@ pub fn spawn_paused_screen(mut commands: Commands) {
                 },
             ));
         });
+
+    let sound_effect = asset_server.load("audio/confirmation_001.ogg");
+    commands.spawn(AudioBundle {
+        source: sound_effect,
+        settings: PlaybackSettings::ONCE,
+    });
 }
 
-pub fn despawn_paused_screen(mut commands: Commands, query: Query<Entity, With<PausedText>>) {
+pub fn despawn_paused_screen(
+    mut commands: Commands,
+    query: Query<Entity, With<PausedText>>,
+    asset_server: Res<AssetServer>,
+) {
     if let Ok(entity) = query.get_single() {
         commands.entity(entity).despawn_recursive();
     }
+
+    let sound_effect = asset_server.load("audio/confirmation_002.ogg");
+    commands.spawn(AudioBundle {
+        source: sound_effect,
+        settings: PlaybackSettings::ONCE,
+    });
 }

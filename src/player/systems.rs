@@ -123,13 +123,10 @@ pub fn player_hit_asteroid(
                 .distance(asteroid_transform.translation);
             if distance < player_radius + asteroid_radius {
                 let sound_effect = asset_server.load("audio/explosionCrunch_000.ogg");
-                commands.spawn((
-                    AudioBundle {
-                        source: sound_effect,
-                        settings: PlaybackSettings::ONCE,
-                    },
-                    SoundEffect,
-                ));
+                commands.spawn(AudioBundle {
+                    source: sound_effect,
+                    settings: PlaybackSettings::ONCE,
+                });
                 commands.entity(player_entity).despawn();
                 game_over_writer.send(GameOver { score: score.value });
             }
@@ -155,13 +152,10 @@ pub fn player_hit_star(
             if distance < player_radius + star_radius {
                 score.value += 1;
                 let sound_effect = asset_server.load("audio/laserLarge_000.ogg");
-                commands.spawn((
-                    AudioBundle {
-                        source: sound_effect,
-                        settings: PlaybackSettings::ONCE,
-                    },
-                    SoundEffect,
-                ));
+                commands.spawn(AudioBundle {
+                    source: sound_effect,
+                    settings: PlaybackSettings::ONCE,
+                });
                 commands.entity(star_entity).despawn();
             }
         }
