@@ -46,3 +46,16 @@ pub fn spawn_background(
         Background {},
     ));
 }
+
+#[derive(Component)]
+struct Music;
+
+pub fn spawn_music(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.spawn((
+        AudioBundle {
+            source: asset_server.load("audio/sci-fi-dramatic-theme.ogg"),
+            settings: PlaybackSettings::LOOP,
+        },
+        Music,
+    ));
+}

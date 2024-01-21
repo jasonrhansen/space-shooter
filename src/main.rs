@@ -23,7 +23,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_state::<AppState>()
         .add_event::<GameOver>()
-        .add_systems(Startup, (spawn_camera, spawn_background))
+        .add_systems(Startup, (spawn_camera, spawn_background, spawn_music))
         .add_plugins((
             AsteroidPlugin,
             PlayerPlugin,
