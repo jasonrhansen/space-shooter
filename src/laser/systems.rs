@@ -4,11 +4,9 @@ use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_rapier2d::prelude::*;
 
 use crate::asteroid::components::Asteroid;
-use crate::asteroid::ASTEROID_SIZE;
 
 use super::components::*;
 use super::events::SpawnLaser;
-use super::LASER_SIZE;
 use super::LASER_SPEED;
 
 pub fn spawn_lasers(
@@ -29,24 +27,19 @@ pub fn spawn_lasers(
             ),
         );
         commands
-            .spawn(Laser {
-                direction: spawn_laser.direction.normalize(),
-            })
+            .spawn(Laser)
             .insert(SpriteBundle {
                 transform,
                 texture: asset_server.load("images/sprites/laserRed01.png"),
                 ..default()
             })
+            .insert(Velocity::linear(
+                spawn_laser.direction.normalize() * LASER_SPEED,
+            ))
             .insert(RigidBody::Dynamic)
-            .insert(Collider::cuboid(4.0, 25.0));
+            .insert(Collider::cuboid(4.0, 25.0))
+            .insert(ActiveEvents::COLLISION_EVENTS);
     });
-}
-
-pub fn laser_movement(mut laser_query: Query<(&mut Transform, &mut Laser)>, time: Res<Time>) {
-    for (mut transform, laser) in laser_query.iter_mut() {
-        let direction = Vec3::new(laser.direction.x, laser.direction.y, 0.0);
-        transform.translation += direction * LASER_SPEED * time.delta_seconds();
-    }
 }
 
 pub fn despawn_offscreen_lasers(
@@ -56,11 +49,11 @@ pub fn despawn_offscreen_lasers(
 ) {
     let window = window_query.get_single().unwrap();
 
-    let half_laser_size = LASER_SIZE / 2.0;
-    let x_min = -half_laser_size;
-    let x_max = window.width() + half_laser_size;
-    let y_min = -half_laser_size;
-    let y_max = window.height() + half_laser_size;
+    let max_offscreen = 20.0;
+    let x_min = -max_offscreen;
+    let x_max = window.width() + max_offscreen;
+    let y_min = -max_offscreen;
+    let y_max = window.height() + max_offscreen;
 
     for (entity, transform) in laser_query.iter() {
         if transform.translation.x < x_min
@@ -75,19 +68,26 @@ pub fn despawn_offscreen_lasers(
 
 pub fn laser_hit_asteroid(
     mut commands: Commands,
-    laser_query: Query<(Entity, &Transform), With<Laser>>,
-    asteroid_query: Query<&Transform, With<Asteroid>>,
+    mut event_reader: EventReader<CollisionEvent>,
+    laser_query: Query<Entity, With<Laser>>,
+    asteroid_query: Query<Entity, With<Asteroid>>,
 ) {
-    if let Ok((laser_entity, laser_transform)) = laser_query.get_single() {
-        let laser_radius = LASER_SIZE / 2.0;
-        let asteroid_radius = ASTEROID_SIZE / 2.0;
-
-        for asteroid_transform in asteroid_query.iter() {
-            let distance = laser_transform
-                .translation
-                .distance(asteroid_transform.translation);
-            if distance < laser_radius + asteroid_radius {
-                commands.entity(laser_entity).despawn();
+    for collision_event in event_reader.read() {
+        let (is_started, entity1, entity2) = match collision_event {
+            CollisionEvent::Started(entity1, entity2, _flags) => (true, *entity1, *entity2),
+            CollisionEvent::Stopped(entity1, entity2, _flags) => (false, *entity1, *entity2),
+        };
+        for laser_entity in laser_query.iter() {
+            for asteroid_entity in asteroid_query.iter() {
+                if entity1 == laser_entity && entity2 == asteroid_entity
+                    || entity1 == asteroid_entity && entity2 == laser_entity
+                {
+                    if is_started {
+                        commands.entity(laser_entity).remove::<SpriteBundle>();
+                    } else {
+                        commands.entity(laser_entity).despawn();
+                    }
+                }
             }
         }
     }
