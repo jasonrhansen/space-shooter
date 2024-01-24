@@ -1,6 +1,7 @@
 use std::f32::consts::PI;
 
 use bevy::{prelude::*, window::PrimaryWindow};
+use bevy_rapier2d::prelude::*;
 
 use crate::asteroid::components::Asteroid;
 use crate::asteroid::ASTEROID_SIZE;
@@ -27,16 +28,17 @@ pub fn spawn_lasers(
                 spawn_laser.direction.y.atan2(spawn_laser.direction.x) - PI / 2.0,
             ),
         );
-        commands.spawn((
-            SpriteBundle {
+        commands
+            .spawn(Laser {
+                direction: spawn_laser.direction.normalize(),
+            })
+            .insert(SpriteBundle {
                 transform,
                 texture: asset_server.load("images/sprites/laserRed01.png"),
                 ..default()
-            },
-            Laser {
-                direction: spawn_laser.direction.normalize(),
-            },
-        ));
+            })
+            .insert(RigidBody::Dynamic)
+            .insert(Collider::cuboid(4.0, 25.0));
     });
 }
 
@@ -44,31 +46,6 @@ pub fn laser_movement(mut laser_query: Query<(&mut Transform, &mut Laser)>, time
     for (mut transform, laser) in laser_query.iter_mut() {
         let direction = Vec3::new(laser.direction.x, laser.direction.y, 0.0);
         transform.translation += direction * LASER_SPEED * time.delta_seconds();
-    }
-}
-
-pub fn update_laser_direction(
-    mut laser_query: Query<(&Transform, &mut Laser)>,
-    window_query: Query<&Window, With<PrimaryWindow>>,
-) {
-    let window = window_query.get_single().unwrap();
-
-    let half_laser_size = LASER_SIZE / 2.0;
-    let x_min = half_laser_size;
-    let x_max = window.width() - half_laser_size;
-    let y_min = half_laser_size;
-    let y_max = window.height() - half_laser_size;
-
-    for (transform, mut laser) in laser_query.iter_mut() {
-        let translation = transform.translation;
-        if translation.x < x_min || translation.x > x_max {
-            laser.direction.x *= -1.0;
-        }
-
-        let translation = transform.translation;
-        if translation.y < y_min || translation.y > y_max {
-            laser.direction.y *= -1.0;
-        }
     }
 }
 

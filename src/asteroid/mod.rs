@@ -17,13 +17,7 @@ impl Plugin for AsteroidPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_asteroids).add_systems(
             Update,
-            (
-                asteroid_movement,
-                update_asteroid_direction,
-                wrap_asteroid_movement,
-            )
-                .chain()
-                .run_if(in_state(AppState::Playing)),
+            wrap_asteroid_movement.run_if(in_state(AppState::Playing)),
         );
     }
 }

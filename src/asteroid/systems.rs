@@ -1,6 +1,7 @@
 use std::f32::consts::PI;
 
 use bevy::{prelude::*, window::PrimaryWindow};
+use bevy_rapier2d::prelude::*;
 use rand::prelude::*;
 
 use super::components::*;
@@ -18,55 +19,19 @@ pub fn spawn_asteroids(
     for i in 1..=NUM_ASTEROIDS {
         let random_x = random::<f32>() * window.width();
         let random_y = random::<f32>() * window.height();
-        commands.spawn((
-            SpriteBundle {
+        commands
+            .spawn(Asteroid)
+            .insert(SpriteBundle {
                 transform: Transform::from_xyz(random_x, random_y, 0.0),
                 texture: asset_server.load(format!("images/sprites/meteorGrey_big{i}.png")),
                 ..default()
-            },
-            Asteroid {
-                direction: Vec2::new(random::<f32>(), random::<f32>()).normalize(),
-                rotation_speed: random::<f32>() * PI - PI,
-            },
-        ));
-    }
-}
-
-pub fn asteroid_movement(
-    mut asteroid_query: Query<(&mut Transform, &mut Asteroid)>,
-    time: Res<Time>,
-) {
-    for (mut transform, asteroid) in asteroid_query.iter_mut() {
-        let direction = Vec3::new(asteroid.direction.x, asteroid.direction.y, 0.0);
-        transform.translation += direction * ASTEROID_SPEED * time.delta_seconds();
-        transform.rotate(Quat::from_rotation_z(
-            asteroid.rotation_speed * time.delta_seconds(),
-        ));
-    }
-}
-
-pub fn update_asteroid_direction(
-    mut asteroid_query: Query<(&Transform, &mut Asteroid)>,
-    window_query: Query<&Window, With<PrimaryWindow>>,
-) {
-    let window = window_query.get_single().unwrap();
-
-    let half_asteroid_size = ASTEROID_SIZE / 2.0;
-    let x_min = half_asteroid_size;
-    let x_max = window.width() - half_asteroid_size;
-    let y_min = half_asteroid_size;
-    let y_max = window.height() - half_asteroid_size;
-
-    for (transform, mut asteroid) in asteroid_query.iter_mut() {
-        let translation = transform.translation;
-        if translation.x < x_min || translation.x > x_max {
-            asteroid.direction.x *= -1.0;
-        }
-
-        let translation = transform.translation;
-        if translation.y < y_min || translation.y > y_max {
-            asteroid.direction.y *= -1.0;
-        }
+            })
+            .insert(RigidBody::Dynamic)
+            .insert(Velocity {
+                linvel: Vec2::new(random::<f32>(), random::<f32>()).normalize() * ASTEROID_SPEED,
+                angvel: random::<f32>() * PI - PI,
+            })
+            .insert(Collider::ball(ASTEROID_SIZE / 2.0));
     }
 }
 
