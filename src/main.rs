@@ -1,3 +1,5 @@
+#![allow(clippy::type_complexity)]
+
 use asteroid::AsteroidPlugin;
 use bevy::prelude::*;
 
@@ -57,6 +59,3 @@ pub enum AppState {
     Paused,
     GameOver,
 }
-
-#[derive(Component)]
-pub struct PausedText;
