@@ -1,6 +1,10 @@
 use std::f32::consts::PI;
 
-use super::{components::*, PLAYER_ACCELERATION, PLAYER_MAX_SPEED, PLAYER_SIZE};
+use super::{
+    components::*, PLAYER_ACCELERATION, PLAYER_COLLISION_GROUP, PLAYER_MAX_SPEED, PLAYER_SIZE,
+};
+use crate::laser::LASER_COLLISION_GROUP;
+use crate::player;
 use crate::{
     asteroid::{components::Asteroid, ASTEROID_SIZE},
     events::GameOver,
@@ -9,6 +13,8 @@ use crate::{
     star::{components::Star, STAR_SIZE},
 };
 use bevy::{prelude::*, window::PrimaryWindow};
+use bevy_rapier2d::rapier::prelude::Group;
+use bevy_rapier2d::{geometry, prelude::*};
 
 pub fn spawn_player(
     mut commands: Commands,
@@ -17,17 +23,34 @@ pub fn spawn_player(
 ) {
     let window = window_query.get_single().unwrap();
 
-    commands.spawn((
-        SpriteBundle {
+    commands
+        .spawn(Player {
+            direction: Vec2::new(0.0, 1.0),
+            velocity: Vec2::ZERO,
+        })
+        .insert(SpriteBundle {
             transform: Transform::from_xyz(window.width() / 2.0, window.height() / 2.0, 0.0),
             texture: asset_server.load("images/sprites/playerShip1_red.png"),
             ..default()
-        },
-        Player {
-            direction: Vec2::new(0.0, 1.0),
-            velocity: Vec2::ZERO,
-        },
-    ));
+        })
+        .insert(RigidBody::Dynamic)
+        .insert(Collider::compound(
+            player::COLLISION_VERTICES
+                .iter()
+                .map(|vertices| {
+                    (
+                        Vec2::ZERO,
+                        0.0,
+                        Collider::convex_hull(vertices.as_ref()).unwrap(),
+                    )
+                })
+                .collect(),
+        ))
+        .insert(CollisionGroups::new(
+            PLAYER_COLLISION_GROUP,
+            !LASER_COLLISION_GROUP,
+        ))
+        .insert(ActiveEvents::COLLISION_EVENTS);
 }
 
 pub fn player_input(

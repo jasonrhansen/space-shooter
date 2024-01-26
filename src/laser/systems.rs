@@ -4,10 +4,11 @@ use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_rapier2d::prelude::*;
 
 use crate::asteroid::components::Asteroid;
+use crate::player::PLAYER_COLLISION_GROUP;
 
-use super::components::*;
 use super::events::SpawnLaser;
 use super::LASER_SPEED;
+use super::{components::*, LASER_COLLISION_GROUP};
 
 pub fn spawn_lasers(
     mut commands: Commands,
@@ -37,7 +38,11 @@ pub fn spawn_lasers(
                 spawn_laser.direction.normalize() * LASER_SPEED,
             ))
             .insert(RigidBody::Dynamic)
-            .insert(Collider::cuboid(4.0, 25.0))
+            .insert(Collider::round_cuboid(4.0, 25.0, 0.5))
+            .insert(CollisionGroups::new(
+                LASER_COLLISION_GROUP,
+                !(PLAYER_COLLISION_GROUP | LASER_COLLISION_GROUP),
+            ))
             .insert(ActiveEvents::COLLISION_EVENTS);
     });
 }

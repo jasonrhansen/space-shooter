@@ -4,6 +4,7 @@ pub mod components;
 pub mod events;
 pub mod systems;
 
+use bevy_rapier2d::geometry;
 use systems::*;
 
 use crate::AppState;
@@ -12,6 +13,8 @@ use self::events::SpawnLaser;
 
 pub const LASER_SPEED: f32 = 800.0;
 pub const LASER_SIZE: f32 = 64.0;
+
+pub const LASER_COLLISION_GROUP: geometry::Group = geometry::Group::GROUP_2;
 
 pub struct LaserPlugin;
 
