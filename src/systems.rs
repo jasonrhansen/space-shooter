@@ -1,6 +1,7 @@
 use bevy::{app::AppExit, prelude::*, window::PrimaryWindow};
+use bevy_rapier2d::{prelude::RapierConfiguration, render::DebugRenderContext};
 
-use crate::events::GameOver;
+use crate::{app_state::AppState, events::GameOver};
 
 pub fn exit_game(mut exit: EventWriter<AppExit>, keyboard_input: Res<Input<KeyCode>>) {
     if keyboard_input.just_pressed(KeyCode::Escape) {
@@ -58,4 +59,39 @@ pub fn spawn_music(mut commands: Commands, asset_server: Res<AssetServer>) {
         },
         Music,
     ));
+}
+
+pub fn update_paused_state(
+    app_state: ResMut<State<AppState>>,
+    mut next_app_state: ResMut<NextState<AppState>>,
+    keyboard_input: Res<Input<KeyCode>>,
+) {
+    if keyboard_input.just_pressed(KeyCode::Return) {
+        if app_state.as_ref() == &AppState::Paused {
+            next_app_state.set(AppState::Playing);
+        } else if app_state.as_ref() == &AppState::Playing {
+            next_app_state.set(AppState::Paused);
+        }
+    }
+}
+
+pub fn setup_physics(mut rapier_config: ResMut<RapierConfiguration>) {
+    // Disable gravity
+    rapier_config.gravity = Vec2::ZERO;
+}
+
+pub fn handle_physics_active(
+    app_state: Res<State<AppState>>,
+    mut rapier_config: ResMut<RapierConfiguration>,
+) {
+    rapier_config.physics_pipeline_active = app_state.as_ref() == &AppState::Playing;
+}
+
+pub fn toggle_debug_render(
+    mut debug_context: ResMut<DebugRenderContext>,
+    keyboard_input: Res<Input<KeyCode>>,
+) {
+    if keyboard_input.just_pressed(KeyCode::F2) {
+        debug_context.enabled = !debug_context.enabled;
+    }
 }

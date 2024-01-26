@@ -1,9 +1,11 @@
 #![allow(clippy::type_complexity)]
 
+use app_state::AppState;
 use asteroid::AsteroidPlugin;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 
+pub mod app_state;
 pub mod asteroid;
 pub mod events;
 pub mod laser;
@@ -26,7 +28,7 @@ fn main() {
         .add_plugins((
             DefaultPlugins,
             RapierPhysicsPlugin::<NoUserData>::default(),
-            // RapierDebugRenderPlugin::default(),
+            RapierDebugRenderPlugin::default().disabled(),
         ))
         .add_state::<AppState>()
         .add_event::<GameOver>()
@@ -42,44 +44,18 @@ fn main() {
             LaserPlugin,
             OsdPlugin,
         ))
-        .add_systems(Update, (exit_game, handle_game_over, update_paused_state))
+        .add_systems(
+            Update,
+            (
+                exit_game,
+                handle_game_over,
+                update_paused_state,
+                toggle_debug_render,
+            ),
+        )
         .add_systems(
             Update,
             handle_physics_active.run_if(state_changed::<AppState>()),
         )
         .run();
-}
-
-pub fn update_paused_state(
-    app_state: ResMut<State<AppState>>,
-    mut next_app_state: ResMut<NextState<AppState>>,
-    keyboard_input: Res<Input<KeyCode>>,
-) {
-    if keyboard_input.just_pressed(KeyCode::Return) {
-        if app_state.as_ref() == &AppState::Paused {
-            next_app_state.set(AppState::Playing);
-        } else if app_state.as_ref() == &AppState::Playing {
-            next_app_state.set(AppState::Paused);
-        }
-    }
-}
-
-#[derive(States, Debug, Default, Clone, Eq, PartialEq, Hash)]
-pub enum AppState {
-    #[default]
-    Playing,
-    Paused,
-    GameOver,
-}
-
-pub fn setup_physics(mut rapier_config: ResMut<RapierConfiguration>) {
-    // Disable gravity
-    rapier_config.gravity = Vec2::ZERO;
-}
-
-pub fn handle_physics_active(
-    app_state: Res<State<AppState>>,
-    mut rapier_config: ResMut<RapierConfiguration>,
-) {
-    rapier_config.physics_pipeline_active = app_state.as_ref() == &AppState::Playing;
 }
