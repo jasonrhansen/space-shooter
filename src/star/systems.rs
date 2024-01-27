@@ -49,7 +49,8 @@ fn spawn_star(position: Vec2, commands: &mut Commands, asset_server: &Res<AssetS
     commands
         .spawn(Star {})
         .insert(SpriteBundle {
-            transform: Transform::from_xyz(position.x, position.y, -9.0),
+            transform: Transform::from_xyz(position.x, position.y, -9.0)
+                .with_scale(Vec3::splat(0.5)),
             texture: asset_server.load("images/sprites/star_gold.png"),
             ..default()
         })

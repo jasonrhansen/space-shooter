@@ -11,7 +11,7 @@ use systems::*;
 use crate::AppState;
 
 pub const NUM_STARS: usize = 10;
-pub const STAR_SIZE: f32 = 30.0;
+pub const STAR_SIZE: f32 = 15.0;
 pub const STAR_SPAWN_TIME: f32 = 1.0;
 pub const STAR_COLLISION_GROUP: geometry::Group = geometry::Group::GROUP_3;
 
