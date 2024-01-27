@@ -73,9 +73,10 @@ pub fn player_input(
         }
 
         if keyboard_input.just_pressed(KeyCode::Space) {
+            let Vec2 { x, y } = transform.translation.xy() + (player.direction * PLAYER_SIZE / 2.0);
             spawn_laser_writer.send(SpawnLaser {
-                x: transform.translation.x,
-                y: transform.translation.y,
+                x,
+                y,
                 direction: player.direction,
             });
         }

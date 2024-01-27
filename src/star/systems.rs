@@ -44,6 +44,7 @@ pub fn spawn_stars_over_time(
         spawn_star(Vec2::new(random_x, random_y), &mut commands, &asset_server);
     }
 }
+
 fn spawn_star(position: Vec2, commands: &mut Commands, asset_server: &Res<AssetServer>) {
     commands
         .spawn(Star {})
