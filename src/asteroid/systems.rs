@@ -18,32 +18,39 @@ pub fn spawn_asteroids(
     let window = window_query.get_single().unwrap();
 
     for i in 0..NUM_ASTEROIDS {
-        let random_x = random::<f32>() * window.width();
-        let random_y = random::<f32>() * window.height();
-        commands
-            .spawn(Asteroid)
-            .insert(SpriteBundle {
-                transform: Transform::from_xyz(random_x, random_y, 0.0),
-                texture: asset_server.load(format!("images/sprites/meteorGrey_big{}.png", i + 1)),
-                ..default()
-            })
-            .insert(RigidBody::Dynamic)
-            .insert(Velocity {
-                linvel: Vec2::new(random::<f32>(), random::<f32>()).normalize() * ASTEROID_SPEED,
-                angvel: random::<f32>() * PI - PI,
-            })
-            .insert(Collider::compound(
-                asteroid::COLLISION_VERTICES[i]
-                    .iter()
-                    .map(|vertices| {
-                        (
-                            Vec2::ZERO,
-                            0.0,
-                            Collider::convex_hull(vertices.as_ref()).unwrap(),
-                        )
-                    })
-                    .collect(),
-            ));
+        for color in ["Grey", "Brown"] {
+            let random_x = random::<f32>() * window.width();
+            let random_y = random::<f32>() * window.height();
+            commands
+                .spawn(Asteroid)
+                .insert(SpriteBundle {
+                    transform: Transform::from_xyz(random_x, random_y, 0.0),
+                    texture: asset_server.load(format!(
+                        "images/sprites/meteor{}_big{}.png",
+                        color,
+                        i + 1
+                    )),
+                    ..default()
+                })
+                .insert(RigidBody::Dynamic)
+                .insert(Velocity {
+                    linvel: Vec2::new(random::<f32>(), random::<f32>()).normalize()
+                        * ASTEROID_SPEED,
+                    angvel: random::<f32>() * PI - PI,
+                })
+                .insert(Collider::compound(
+                    asteroid::COLLISION_VERTICES[i]
+                        .iter()
+                        .map(|vertices| {
+                            (
+                                Vec2::ZERO,
+                                0.0,
+                                Collider::convex_hull(vertices.as_ref()).unwrap(),
+                            )
+                        })
+                        .collect(),
+                ));
+        }
     }
 }
 
