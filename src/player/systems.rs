@@ -5,16 +5,9 @@ use super::{
 };
 use crate::laser::LASER_COLLISION_GROUP;
 use crate::player;
-use crate::{
-    asteroid::{components::Asteroid, ASTEROID_SIZE},
-    events::GameOver,
-    laser::events::SpawnLaser,
-    score::resources::Score,
-    star::{components::Star, STAR_SIZE},
-};
+use crate::{laser::events::SpawnLaser, score::resources::Score, star::components::Star};
 use bevy::{prelude::*, window::PrimaryWindow};
-use bevy_rapier2d::rapier::prelude::Group;
-use bevy_rapier2d::{geometry, prelude::*};
+use bevy_rapier2d::prelude::*;
 
 pub fn spawn_player(
     mut commands: Commands,
@@ -50,7 +43,8 @@ pub fn spawn_player(
             PLAYER_COLLISION_GROUP,
             !LASER_COLLISION_GROUP,
         ))
-        .insert(ActiveEvents::COLLISION_EVENTS);
+        .insert(ActiveEvents::COLLISION_EVENTS)
+        .insert(CollidingEntities::default());
 }
 
 pub fn player_input(
@@ -128,51 +122,45 @@ pub fn wrap_player_movement(
     }
 }
 
-pub fn player_hit_asteroid(
-    mut commands: Commands,
-    mut game_over_writer: EventWriter<GameOver>,
-    player_query: Query<(Entity, &Transform), With<Player>>,
-    asteroid_query: Query<&Transform, With<Asteroid>>,
-    asset_server: Res<AssetServer>,
-    score: Res<Score>,
-) {
-    if let Ok((player_entity, player_transform)) = player_query.get_single() {
-        let player_radius = PLAYER_SIZE / 2.0;
-        let asteroid_radius = ASTEROID_SIZE / 2.0;
-
-        for asteroid_transform in asteroid_query.iter() {
-            let distance = player_transform
-                .translation
-                .distance(asteroid_transform.translation);
-            if distance < player_radius + asteroid_radius {
-                let sound_effect = asset_server.load("audio/explosionCrunch_000.ogg");
-                commands.spawn(AudioBundle {
-                    source: sound_effect,
-                    settings: PlaybackSettings::ONCE,
-                });
-                commands.entity(player_entity).despawn();
-                game_over_writer.send(GameOver { score: score.value });
-            }
-        }
-    }
-}
+// pub fn player_hit_asteroid(
+//     mut commands: Commands,
+//     mut game_over_writer: EventWriter<GameOver>,
+//     player_query: Query<(Entity, &Transform), With<Player>>,
+//     asteroid_query: Query<&Transform, With<Asteroid>>,
+//     asset_server: Res<AssetServer>,
+//     score: Res<Score>,
+// ) {
+//     if let Ok((player_entity, player_transform)) = player_query.get_single() {
+//         let player_radius = PLAYER_SIZE / 2.0;
+//         let asteroid_radius = ASTEROID_SIZE / 2.0;
+//
+//         for asteroid_transform in asteroid_query.iter() {
+//             let distance = player_transform
+//                 .translation
+//                 .distance(asteroid_transform.translation);
+//             if distance < player_radius + asteroid_radius {
+//                 let sound_effect = asset_server.load("audio/explosionCrunch_000.ogg");
+//                 commands.spawn(AudioBundle {
+//                     source: sound_effect,
+//                     settings: PlaybackSettings::ONCE,
+//                 });
+//                 commands.entity(player_entity).despawn();
+//                 game_over_writer.send(GameOver { score: score.value });
+//             }
+//         }
+//     }
+// }
 
 pub fn player_hit_star(
     mut commands: Commands,
-    player_query: Query<&Transform, With<Player>>,
-    star_query: Query<(Entity, &Transform), With<Star>>,
+    player_colliding_entities: Query<&CollidingEntities, With<Player>>,
+    stars: Query<Entity, With<Star>>,
     asset_server: Res<AssetServer>,
     mut score: ResMut<Score>,
 ) {
-    if let Ok(player_transform) = player_query.get_single() {
-        let player_radius = PLAYER_SIZE / 2.0;
-        let star_radius = STAR_SIZE / 2.0;
-
-        for (star_entity, star_transform) in star_query.iter() {
-            let distance = player_transform
-                .translation
-                .distance(star_transform.translation);
-            if distance < player_radius + star_radius {
+    if let Ok(colliding_entities) = player_colliding_entities.get_single() {
+        for star_entity in stars.iter() {
+            if colliding_entities.contains(star_entity) {
                 score.value += 1;
                 let sound_effect = asset_server.load("audio/laserLarge_000.ogg");
                 commands.spawn(AudioBundle {

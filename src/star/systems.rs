@@ -1,13 +1,13 @@
 use bevy::{prelude::*, window::PrimaryWindow};
+use bevy_rapier2d::prelude::*;
 use rand::prelude::*;
 
-use crate::player::components::Player;
-use crate::player::PLAYER_SIZE;
-use crate::score::resources::Score;
+use crate::player::PLAYER_COLLISION_GROUP;
 
 use super::components::*;
 use super::resources::*;
 use super::NUM_STARS;
+use super::STAR_COLLISION_GROUP;
 use super::STAR_SIZE;
 
 pub fn spawn_stars(
@@ -20,42 +20,8 @@ pub fn spawn_stars(
     for _ in 0..NUM_STARS {
         let random_x = random::<f32>() * window.width();
         let random_y = random::<f32>() * window.height();
-        commands.spawn((
-            SpriteBundle {
-                transform: Transform::from_xyz(random_x, random_y, -9.0),
-                texture: asset_server.load("images/sprites/star_gold.png"),
-                ..default()
-            },
-            Star {},
-        ));
-    }
-}
 
-pub fn player_hit_star(
-    mut commands: Commands,
-    player_query: Query<&Transform, With<Player>>,
-    star_query: Query<(Entity, &Transform), With<Star>>,
-    asset_server: Res<AssetServer>,
-    mut score: ResMut<Score>,
-) {
-    if let Ok(player_transform) = player_query.get_single() {
-        let player_radius = PLAYER_SIZE / 2.0;
-        let star_radius = STAR_SIZE / 2.0;
-
-        for (star_entity, star_transform) in star_query.iter() {
-            let distance = player_transform
-                .translation
-                .distance(star_transform.translation);
-            if distance < player_radius + star_radius {
-                score.value += 1;
-
-                commands.spawn(AudioBundle {
-                    source: asset_server.load("audio/laserLarge_000.ogg"),
-                    settings: PlaybackSettings::ONCE,
-                });
-                commands.entity(star_entity).despawn();
-            }
-        }
+        spawn_star(Vec2::new(random_x, random_y), &mut commands, &asset_server);
     }
 }
 
@@ -74,13 +40,22 @@ pub fn spawn_stars_over_time(
 
         let random_x = random::<f32>() * window.width();
         let random_y = random::<f32>() * window.height();
-        commands.spawn((
-            SpriteBundle {
-                transform: Transform::from_xyz(random_x, random_y, -9.0),
-                texture: asset_server.load("images/sprites/star_gold.png"),
-                ..default()
-            },
-            Star {},
-        ));
+
+        spawn_star(Vec2::new(random_x, random_y), &mut commands, &asset_server);
     }
+}
+fn spawn_star(position: Vec2, commands: &mut Commands, asset_server: &Res<AssetServer>) {
+    commands
+        .spawn(Star {})
+        .insert(SpriteBundle {
+            transform: Transform::from_xyz(position.x, position.y, -9.0),
+            texture: asset_server.load("images/sprites/star_gold.png"),
+            ..default()
+        })
+        .insert(Sensor)
+        .insert(Collider::ball(STAR_SIZE / 2.0))
+        .insert(CollisionGroups::new(
+            STAR_COLLISION_GROUP,
+            PLAYER_COLLISION_GROUP,
+        ));
 }
