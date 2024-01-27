@@ -1,4 +1,9 @@
-use bevy::{app::AppExit, prelude::*, window::PrimaryWindow};
+use bevy::{
+    app::AppExit,
+    audio::{Volume, VolumeLevel},
+    prelude::*,
+    window::PrimaryWindow,
+};
 use bevy_rapier2d::{prelude::RapierConfiguration, render::DebugRenderContext};
 
 use crate::{app_state::AppState, events::GameOver};
@@ -55,7 +60,7 @@ pub fn spawn_music(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         AudioBundle {
             source: asset_server.load("audio/sci-fi-dramatic-theme.ogg"),
-            settings: PlaybackSettings::LOOP,
+            settings: PlaybackSettings::LOOP.with_volume(Volume::Relative(VolumeLevel::new(0.5))),
         },
         Music,
     ));
