@@ -16,15 +16,28 @@ pub fn spawn_asteroids(
     asset_server: Res<AssetServer>,
 ) {
     let window = window_query.get_single().unwrap();
+    let screen_center = Vec2::new(window.width() / 2.0, window.height() / 2.0);
+    const PLAYER_SAFE_RADIUS: f32 = 120.0;
 
     for i in 0..NUM_ASTEROIDS {
         for color in ["Grey", "Brown"] {
-            let random_x = random::<f32>() * window.width();
-            let random_y = random::<f32>() * window.height();
+            let position = {
+                let random_position = Vec2::new(
+                    random::<f32>() * window.width(),
+                    random::<f32>() * window.height(),
+                );
+                // Make sure the asteroid doesn't spawn too close to the player.
+                if random_position.distance(screen_center) < PLAYER_SAFE_RADIUS {
+                    (random_position - screen_center).normalize() * PLAYER_SAFE_RADIUS
+                } else {
+                    random_position
+                }
+            };
+
             commands
                 .spawn(Asteroid)
                 .insert(SpriteBundle {
-                    transform: Transform::from_xyz(random_x, random_y, 0.0),
+                    transform: Transform::from_translation(position.extend(0.0)),
                     texture: asset_server.load(format!(
                         "images/sprites/meteor{}_big{}.png",
                         color,
