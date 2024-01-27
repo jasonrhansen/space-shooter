@@ -88,8 +88,11 @@ pub fn laser_hit_asteroid(
                     || entity1 == asteroid_entity && entity2 == laser_entity
                 {
                     if is_started {
+                        // When colliding into an asteroid we don't want the laser to be visible.
+                        // but we still want it to continue the collision to exert a force.
                         commands.entity(laser_entity).remove::<SpriteBundle>();
                     } else {
+                        // When done colliding we can despawn the laser.
                         commands.entity(laser_entity).despawn();
                     }
                 }
