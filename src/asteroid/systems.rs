@@ -1,8 +1,9 @@
-use super::collision::COLLISION_VERTICES;
 use super::components::*;
+use super::resources::AsteroidCollisionConvexShapes;
 use super::ASTEROID_SIZE;
 use super::ASTEROID_SPEED;
 use super::NUM_ASTEROIDS;
+use super::PLAYER_SAFE_RADIUS;
 use crate::VIEWPORT_HEIGHT;
 use crate::VIEWPORT_WIDTH;
 use bevy::prelude::*;
@@ -10,9 +11,13 @@ use bevy_rapier2d::prelude::*;
 use rand::prelude::*;
 use std::f32::consts::PI;
 
-pub fn spawn_asteroids(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn spawn_asteroids(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    collision_shapes: Res<AsteroidCollisionConvexShapes>,
+) {
     let viewport_center = Vec2::new(VIEWPORT_WIDTH / 2.0, VIEWPORT_HEIGHT / 2.0);
-    const PLAYER_SAFE_RADIUS: f32 = 120.0;
+    let asteroid_shapes = &collision_shapes.asteroid_shapes;
 
     for i in 0..NUM_ASTEROIDS {
         for color in ["Grey", "Brown"] {
@@ -47,7 +52,7 @@ pub fn spawn_asteroids(mut commands: Commands, asset_server: Res<AssetServer>) {
                     angvel: random::<f32>() * PI - PI,
                 })
                 .insert(Collider::compound(
-                    COLLISION_VERTICES[i]
+                    asteroid_shapes[i]
                         .iter()
                         .map(|vertices| {
                             (

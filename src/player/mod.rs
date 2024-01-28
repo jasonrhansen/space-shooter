@@ -1,9 +1,9 @@
-pub mod collision;
 pub mod components;
 pub mod events;
+pub mod resources;
 pub mod systems;
 
-use self::events::PlayerThrusterChanged;
+use self::{events::PlayerThrusterChanged, resources::PlayerCollisionConvexShapes};
 use crate::AppState;
 use bevy::prelude::*;
 use systems::*;
@@ -16,7 +16,8 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<PlayerThrusterChanged>()
+        app.init_resource::<PlayerCollisionConvexShapes>()
+            .add_event::<PlayerThrusterChanged>()
             .add_systems(Startup, spawn_player)
             .add_systems(
                 Update,

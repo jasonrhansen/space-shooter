@@ -1,5 +1,5 @@
-use super::collision::COLLISION_VERTICES;
 use super::events::PlayerThrusterChanged;
+use super::resources::PlayerCollisionConvexShapes;
 use super::{components::*, PLAYER_ACCELERATION, PLAYER_MAX_SPEED, PLAYER_SIZE};
 use crate::collision_groups::*;
 use crate::{laser::events::SpawnLaser, score::resources::Score, star::components::Star};
@@ -8,7 +8,13 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use std::f32::consts::PI;
 
-pub fn spawn_player(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn spawn_player(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    collision_shapes: Res<PlayerCollisionConvexShapes>,
+) {
+    let player_shapes = &collision_shapes.player_shapes;
+
     commands
         .spawn(Player {
             direction: Vec2::new(0.0, 1.0),
@@ -21,7 +27,7 @@ pub fn spawn_player(mut commands: Commands, asset_server: Res<AssetServer>) {
         })
         .insert(RigidBody::Dynamic)
         .insert(Collider::compound(
-            COLLISION_VERTICES
+            player_shapes
                 .iter()
                 .map(|vertices| {
                     (

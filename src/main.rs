@@ -31,6 +31,9 @@ use ui::UiPlugin;
 pub const VIEWPORT_WIDTH: f32 = 1280.0;
 pub const VIEWPORT_HEIGHT: f32 = 720.0;
 
+// A ConvexShape is a list of vertices that define a convex shape.
+pub type ConvexShape = Box<[Vect]>;
+
 fn main() {
     App::new()
         .add_plugins((
