@@ -5,3 +5,9 @@ pub struct Player {
     pub direction: Vec2,
     pub velocity: Vec2,
 }
+
+#[derive(Component)]
+pub struct ForwardThruster;
+
+#[derive(Component)]
+pub struct BackwardThruster;

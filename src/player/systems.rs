@@ -1,5 +1,6 @@
 use std::f32::consts::PI;
 
+use super::events::PlayerThrusterChanged;
 use super::{
     components::*, PLAYER_ACCELERATION, PLAYER_COLLISION_GROUP, PLAYER_MAX_SPEED, PLAYER_SIZE,
 };
@@ -44,11 +45,40 @@ pub fn spawn_player(
             !LASER_COLLISION_GROUP,
         ))
         .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert(CollidingEntities::default());
+        .insert(CollidingEntities::default())
+        .with_children(|parent| {
+            parent.spawn(ForwardThruster).insert(SpriteBundle {
+                transform: Transform::from_xyz(-20.0, -PLAYER_SIZE / 2.0 - 10.0, 0.0),
+                texture: asset_server.load("images/sprites/fire13.png"),
+                visibility: Visibility::Hidden,
+                ..default()
+            });
+            parent.spawn(ForwardThruster).insert(SpriteBundle {
+                transform: Transform::from_xyz(20.0, -PLAYER_SIZE / 2.0 - 10.0, 0.0),
+                texture: asset_server.load("images/sprites/fire13.png"),
+                visibility: Visibility::Hidden,
+                ..default()
+            });
+            parent.spawn(BackwardThruster).insert(SpriteBundle {
+                transform: Transform::from_xyz(-30.0, 20.0, 0.0)
+                    .with_rotation(Quat::from_rotation_z(PI)),
+                texture: asset_server.load("images/sprites/fire13.png"),
+                visibility: Visibility::Hidden,
+                ..default()
+            });
+            parent.spawn(BackwardThruster).insert(SpriteBundle {
+                transform: Transform::from_xyz(30.0, 20.0, 0.0)
+                    .with_rotation(Quat::from_rotation_z(PI)),
+                texture: asset_server.load("images/sprites/fire13.png"),
+                visibility: Visibility::Hidden,
+                ..default()
+            });
+        });
 }
 
 pub fn player_input(
     mut spawn_laser_writer: EventWriter<SpawnLaser>,
+    mut thruster_writer: EventWriter<PlayerThrusterChanged>,
     mut player_query: Query<(&mut Player, &Transform), With<Player>>,
     keyboard_input: Res<Input<KeyCode>>,
     time: Res<Time>,
@@ -60,16 +90,21 @@ pub fn player_input(
         if keyboard_input.pressed(KeyCode::Right) || keyboard_input.pressed(KeyCode::D) {
             player.direction = player.direction.rotate(Vec2::from_angle(-PI / 32.0));
         }
+
         if keyboard_input.pressed(KeyCode::Up) || keyboard_input.pressed(KeyCode::W) {
             let v = player.direction * PLAYER_ACCELERATION * time.delta_seconds();
             player.velocity += v;
             player.velocity = player.velocity.clamp_length_max(PLAYER_MAX_SPEED);
-        }
 
-        if keyboard_input.pressed(KeyCode::Down) || keyboard_input.pressed(KeyCode::S) {
+            thruster_writer.send(PlayerThrusterChanged::Forward);
+        } else if keyboard_input.pressed(KeyCode::Down) || keyboard_input.pressed(KeyCode::S) {
             let v = player.direction * PLAYER_ACCELERATION * time.delta_seconds();
             player.velocity -= v;
             player.velocity = player.velocity.clamp_length_max(PLAYER_MAX_SPEED);
+
+            thruster_writer.send(PlayerThrusterChanged::Backward);
+        } else {
+            thruster_writer.send(PlayerThrusterChanged::None);
         }
 
         if keyboard_input.just_pressed(KeyCode::Space) {
@@ -169,6 +204,45 @@ pub fn player_hit_star(
                     settings: PlaybackSettings::ONCE,
                 });
                 commands.entity(star_entity).despawn();
+            }
+        }
+    }
+}
+
+pub fn forward_thruster_visibility(
+    mut commands: Commands,
+    mut thrust_changed_events: EventReader<PlayerThrusterChanged>,
+    player_children_query: Query<&Children, With<Player>>,
+    forward_thruster_query: Query<&ForwardThruster>,
+    backward_thruster_query: Query<&BackwardThruster>,
+) {
+    if let Some(event) = thrust_changed_events.read().last() {
+        if let Ok(children) = player_children_query.get_single() {
+            match event {
+                PlayerThrusterChanged::Forward => {
+                    for &child in children.iter() {
+                        if forward_thruster_query.contains(child) {
+                            commands.entity(child).insert(Visibility::Inherited);
+                        }
+                    }
+                }
+                PlayerThrusterChanged::Backward => {
+                    for &child in children.iter() {
+                        if backward_thruster_query.contains(child) {
+                            commands.entity(child).insert(Visibility::Inherited);
+                        }
+                    }
+                }
+                PlayerThrusterChanged::None => {
+                    for &child in children.iter() {
+                        if forward_thruster_query.contains(child) {
+                            commands.entity(child).insert(Visibility::Hidden);
+                        }
+                        if backward_thruster_query.contains(child) {
+                            commands.entity(child).insert(Visibility::Hidden);
+                        }
+                    }
+                }
             }
         }
     }

@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
 pub mod components;
+pub mod events;
 pub mod systems;
 
 use bevy_rapier2d::{geometry, prelude::Vect};
@@ -8,6 +9,8 @@ use once_cell::sync::Lazy;
 use systems::*;
 
 use crate::AppState;
+
+use self::events::PlayerThrusterChanged;
 
 pub const PLAYER_SIZE: f32 = 75.0;
 pub const PLAYER_MAX_SPEED: f32 = 800.0;
@@ -54,14 +57,17 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_player).add_systems(
-            Update,
-            (
-                (player_input, player_movement, wrap_player_movement).chain(),
-                // player_hit_asteroid,
-                player_hit_star,
-            )
-                .run_if(in_state(AppState::Playing)),
-        );
+        app.add_event::<PlayerThrusterChanged>()
+            .add_systems(Startup, spawn_player)
+            .add_systems(
+                Update,
+                (
+                    (player_input, player_movement, wrap_player_movement).chain(),
+                    // player_hit_asteroid,
+                    player_hit_star,
+                    forward_thruster_visibility,
+                )
+                    .run_if(in_state(AppState::Playing)),
+            );
     }
 }
