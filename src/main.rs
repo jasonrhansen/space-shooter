@@ -1,27 +1,31 @@
 #![allow(clippy::type_complexity)]
 
-use app_state::AppState;
+use crate::app_state::AppState;
 use asteroid::AsteroidPlugin;
-use bevy::{prelude::*, window::PresentMode};
+use bevy::window::PresentMode;
+use bevy::{app::AppExit, prelude::*};
 use bevy_rapier2d::prelude::*;
+use bevy_rapier2d::{prelude::RapierConfiguration, render::DebugRenderContext};
 
 pub mod app_state;
 pub mod asteroid;
-pub mod events;
+pub mod background;
+pub mod camera;
 pub mod laser;
-pub mod osd;
+pub mod music;
 pub mod player;
 pub mod score;
 pub mod star;
-pub mod systems;
+pub mod ui;
 
-use events::*;
+use background::spawn_background;
+use camera::spawn_camera;
 use laser::LaserPlugin;
-use osd::OsdPlugin;
+use music::spawn_music;
 use player::PlayerPlugin;
 use score::ScorePlugin;
 use star::StarPlugin;
-use systems::*;
+use ui::UiPlugin;
 
 pub const VIEWPORT_WIDTH: f32 = 1280.0;
 pub const VIEWPORT_HEIGHT: f32 = 720.0;
@@ -53,7 +57,7 @@ fn main() {
             ScorePlugin,
             StarPlugin,
             LaserPlugin,
-            OsdPlugin,
+            UiPlugin,
         ))
         .add_systems(
             Update,
@@ -69,4 +73,56 @@ fn main() {
             handle_physics_active.run_if(state_changed::<AppState>()),
         )
         .run();
+}
+
+#[derive(Event)]
+pub struct GameOver {
+    pub score: u32,
+}
+
+pub fn exit_game(mut exit: EventWriter<AppExit>, keyboard_input: Res<Input<KeyCode>>) {
+    if keyboard_input.just_pressed(KeyCode::Escape) {
+        exit.send(AppExit);
+    }
+}
+
+pub fn handle_game_over(mut game_over_reader: EventReader<GameOver>) {
+    for game_over in game_over_reader.read() {
+        println!("Game Over! Score: {}", game_over.score);
+    }
+}
+
+pub fn update_paused_state(
+    app_state: ResMut<State<AppState>>,
+    mut next_app_state: ResMut<NextState<AppState>>,
+    keyboard_input: Res<Input<KeyCode>>,
+) {
+    if keyboard_input.just_pressed(KeyCode::Return) {
+        if app_state.as_ref() == &AppState::Paused {
+            next_app_state.set(AppState::Playing);
+        } else if app_state.as_ref() == &AppState::Playing {
+            next_app_state.set(AppState::Paused);
+        }
+    }
+}
+
+pub fn setup_physics(mut rapier_config: ResMut<RapierConfiguration>) {
+    // Disable gravity
+    rapier_config.gravity = Vec2::ZERO;
+}
+
+pub fn handle_physics_active(
+    app_state: Res<State<AppState>>,
+    mut rapier_config: ResMut<RapierConfiguration>,
+) {
+    rapier_config.physics_pipeline_active = app_state.as_ref() == &AppState::Playing;
+}
+
+pub fn toggle_debug_render(
+    mut debug_context: ResMut<DebugRenderContext>,
+    keyboard_input: Res<Input<KeyCode>>,
+) {
+    if keyboard_input.just_pressed(KeyCode::F2) {
+        debug_context.enabled = !debug_context.enabled;
+    }
 }

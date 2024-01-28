@@ -7,9 +7,9 @@ use systems::*;
 
 use crate::AppState;
 
-pub struct OsdPlugin;
+pub struct UiPlugin;
 
-impl Plugin for OsdPlugin {
+impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup)
             .add_systems(

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use super::resources::*;
-use crate::events::*;
+use crate::GameOver;
 
 pub fn update_high_scores(
     mut game_over_reader: EventReader<GameOver>,
