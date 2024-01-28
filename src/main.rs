@@ -2,7 +2,7 @@
 
 use app_state::AppState;
 use asteroid::AsteroidPlugin;
-use bevy::prelude::*;
+use bevy::{prelude::*, window::PresentMode};
 use bevy_rapier2d::prelude::*;
 
 pub mod app_state;
@@ -23,10 +23,21 @@ use score::ScorePlugin;
 use star::StarPlugin;
 use systems::*;
 
+pub const VIEWPORT_WIDTH: f32 = 1280.0;
+pub const VIEWPORT_HEIGHT: f32 = 720.0;
+
 fn main() {
     App::new()
         .add_plugins((
-            DefaultPlugins,
+            DefaultPlugins.set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: "Space Shooter".into(),
+                    present_mode: PresentMode::AutoVsync,
+                    resizable: false,
+                    ..default()
+                }),
+                ..default()
+            }),
             RapierPhysicsPlugin::<NoUserData>::default(),
             RapierDebugRenderPlugin::default().disabled(),
         ))

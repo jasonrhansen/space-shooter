@@ -1,14 +1,12 @@
-use std::f32::consts::PI;
-
-use bevy::{prelude::*, window::PrimaryWindow};
-use bevy_rapier2d::prelude::*;
-
-use crate::asteroid::components::Asteroid;
-use crate::player::PLAYER_COLLISION_GROUP;
-
 use super::events::SpawnLaser;
 use super::LASER_SPEED;
 use super::{components::*, LASER_COLLISION_GROUP};
+use crate::asteroid::components::Asteroid;
+use crate::player::PLAYER_COLLISION_GROUP;
+use crate::{VIEWPORT_HEIGHT, VIEWPORT_WIDTH};
+use bevy::prelude::*;
+use bevy_rapier2d::prelude::*;
+use std::f32::consts::PI;
 
 pub fn spawn_lasers(
     mut commands: Commands,
@@ -50,15 +48,12 @@ pub fn spawn_lasers(
 pub fn despawn_offscreen_lasers(
     mut commands: Commands,
     laser_query: Query<(Entity, &Transform), With<Laser>>,
-    window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
-    let window = window_query.get_single().unwrap();
-
     let max_offscreen = 20.0;
     let x_min = -max_offscreen;
-    let x_max = window.width() + max_offscreen;
+    let x_max = VIEWPORT_WIDTH + max_offscreen;
     let y_min = -max_offscreen;
-    let y_max = window.height() + max_offscreen;
+    let y_max = VIEWPORT_HEIGHT + max_offscreen;
 
     for (entity, transform) in laser_query.iter() {
         if transform.translation.x < x_min

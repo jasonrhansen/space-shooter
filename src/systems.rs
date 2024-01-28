@@ -2,11 +2,16 @@ use bevy::{
     app::AppExit,
     audio::{Volume, VolumeLevel},
     prelude::*,
+    render::{
+        camera::ScalingMode,
+        texture::{ImageAddressMode, ImageLoaderSettings, ImageSampler, ImageSamplerDescriptor},
+    },
+    sprite::Anchor,
     window::PrimaryWindow,
 };
 use bevy_rapier2d::{prelude::RapierConfiguration, render::DebugRenderContext};
 
-use crate::{app_state::AppState, events::GameOver};
+use crate::{app_state::AppState, events::GameOver, VIEWPORT_HEIGHT, VIEWPORT_WIDTH};
 
 pub fn exit_game(mut exit: EventWriter<AppExit>, keyboard_input: Res<Input<KeyCode>>) {
     if keyboard_input.just_pressed(KeyCode::Escape) {
@@ -20,33 +25,48 @@ pub fn handle_game_over(mut game_over_reader: EventReader<GameOver>) {
     }
 }
 
+#[derive(Component)]
+struct GameCamera;
+
 pub fn spawn_camera(mut commands: Commands, window_query: Query<&Window, With<PrimaryWindow>>) {
     let window = window_query.get_single().unwrap();
 
-    commands.spawn(Camera2dBundle {
+    let mut camera_bundle = Camera2dBundle {
         transform: Transform::from_xyz(window.width() / 2.0, window.height() / 2.0, 0.0),
         ..default()
-    });
+    };
+
+    camera_bundle.projection.scaling_mode = ScalingMode::AutoMin {
+        min_width: VIEWPORT_WIDTH,
+        min_height: VIEWPORT_HEIGHT,
+    };
+
+    commands.spawn((GameCamera, camera_bundle));
 }
 
 #[derive(Component)]
 struct Background;
 
-pub fn spawn_background(
-    mut commands: Commands,
-    window_query: Query<&Window, With<PrimaryWindow>>,
-    asset_server: Res<AssetServer>,
-) {
-    let window = window_query.get_single().unwrap();
+pub fn spawn_background(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let sampler_desc = ImageSamplerDescriptor {
+        address_mode_u: ImageAddressMode::Repeat,
+        address_mode_v: ImageAddressMode::Repeat,
+        ..Default::default()
+    };
+
+    let settings = move |s: &mut ImageLoaderSettings| {
+        s.sampler = ImageSampler::Descriptor(sampler_desc.clone());
+    };
 
     commands.spawn((
         SpriteBundle {
-            transform: Transform::from_xyz(window.width() / 2.0, window.height() / 2.0, -10.0),
+            transform: Transform::from_xyz(0.0, 0.0, -1000.0),
             sprite: Sprite {
-                custom_size: Some(Vec2::new(window.width(), window.height())),
+                anchor: Anchor::BottomLeft,
+                rect: Some(Rect::new(0.0, 0.0, VIEWPORT_WIDTH, VIEWPORT_HEIGHT)),
                 ..default()
             },
-            texture: asset_server.load("images/backgrounds/darkPurple.png"),
+            texture: asset_server.load_with_settings("images/backgrounds/darkPurple.png", settings),
             ..default()
         },
         Background {},

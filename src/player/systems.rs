@@ -1,29 +1,22 @@
-use std::f32::consts::PI;
-
 use super::events::PlayerThrusterChanged;
 use super::{
     components::*, PLAYER_ACCELERATION, PLAYER_COLLISION_GROUP, PLAYER_MAX_SPEED, PLAYER_SIZE,
 };
 use crate::laser::LASER_COLLISION_GROUP;
-use crate::player;
 use crate::{laser::events::SpawnLaser, score::resources::Score, star::components::Star};
-use bevy::{prelude::*, window::PrimaryWindow};
+use crate::{player, VIEWPORT_HEIGHT, VIEWPORT_WIDTH};
+use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
+use std::f32::consts::PI;
 
-pub fn spawn_player(
-    mut commands: Commands,
-    window_query: Query<&Window, With<PrimaryWindow>>,
-    asset_server: Res<AssetServer>,
-) {
-    let window = window_query.get_single().unwrap();
-
+pub fn spawn_player(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn(Player {
             direction: Vec2::new(0.0, 1.0),
             velocity: Vec2::ZERO,
         })
         .insert(SpriteBundle {
-            transform: Transform::from_xyz(window.width() / 2.0, window.height() / 2.0, 0.0),
+            transform: Transform::from_xyz(VIEWPORT_WIDTH / 2.0, VIEWPORT_HEIGHT / 2.0, 0.0),
             texture: asset_server.load("images/sprites/playerShip1_red.png"),
             ..default()
         })
@@ -131,17 +124,12 @@ pub fn player_movement(
     }
 }
 
-pub fn wrap_player_movement(
-    mut player_query: Query<&mut Transform, With<Player>>,
-    window_query: Query<&Window, With<PrimaryWindow>>,
-) {
-    let window = window_query.get_single().unwrap();
-
+pub fn wrap_player_movement(mut player_query: Query<&mut Transform, With<Player>>) {
     let half_player_size = PLAYER_SIZE / 2.0;
     let x_min = -half_player_size;
-    let x_max = window.width() + half_player_size;
+    let x_max = VIEWPORT_WIDTH + half_player_size;
     let y_min = -half_player_size;
-    let y_max = window.height() + half_player_size;
+    let y_max = VIEWPORT_HEIGHT + half_player_size;
 
     if let Ok(mut transform) = player_query.get_single_mut() {
         if transform.translation.x < x_min {
