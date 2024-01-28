@@ -1,8 +1,6 @@
-use bevy::prelude::*;
-
+use super::components::*;
+use super::*;
 use crate::{score::resources::Score, AppState};
-
-use super::components::ScoreText;
 
 pub fn setup(mut commands: Commands) {
     commands.spawn((
@@ -31,18 +29,6 @@ pub fn update_score_text(score: Res<Score>, mut query: Query<&mut Text, With<Sco
         }
     }
 }
-
-#[derive(Component)]
-pub struct PausedMenu;
-
-#[derive(Component)]
-pub struct ResumeGameButton;
-
-#[derive(Component)]
-pub struct QuitGameButton;
-
-pub const MENU_BUTTON_WIDTH: f32 = 300.0;
-pub const MENU_BUTTON_HEIGHT: f32 = 80.0;
 
 pub fn spawn_paused_screen(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands

@@ -1,8 +1,8 @@
+use super::components::*;
 use super::events::SpawnLaser;
 use super::LASER_SPEED;
-use super::{components::*, LASER_COLLISION_GROUP};
 use crate::asteroid::components::Asteroid;
-use crate::player::PLAYER_COLLISION_GROUP;
+use crate::collision_groups::*;
 use crate::{VIEWPORT_HEIGHT, VIEWPORT_WIDTH};
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;

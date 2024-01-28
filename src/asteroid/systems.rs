@@ -1,8 +1,8 @@
+use super::collision::COLLISION_VERTICES;
 use super::components::*;
 use super::ASTEROID_SIZE;
 use super::ASTEROID_SPEED;
 use super::NUM_ASTEROIDS;
-use crate::asteroid;
 use crate::VIEWPORT_HEIGHT;
 use crate::VIEWPORT_WIDTH;
 use bevy::prelude::*;
@@ -47,7 +47,7 @@ pub fn spawn_asteroids(mut commands: Commands, asset_server: Res<AssetServer>) {
                     angvel: random::<f32>() * PI - PI,
                 })
                 .insert(Collider::compound(
-                    asteroid::COLLISION_VERTICES[i]
+                    COLLISION_VERTICES[i]
                         .iter()
                         .map(|vertices| {
                             (

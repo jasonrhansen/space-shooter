@@ -1,19 +1,15 @@
-use bevy::prelude::*;
-
 pub mod components;
 pub mod resources;
 pub mod systems;
 
-use bevy_rapier2d::geometry;
+use crate::AppState;
+use bevy::prelude::*;
 use resources::*;
 use systems::*;
-
-use crate::AppState;
 
 pub const NUM_STARS: usize = 10;
 pub const STAR_SIZE: f32 = 15.0;
 pub const STAR_SPAWN_TIME: f32 = 1.0;
-pub const STAR_COLLISION_GROUP: geometry::Group = geometry::Group::GROUP_3;
 
 pub struct StarPlugin;
 

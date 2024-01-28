@@ -1,10 +1,9 @@
+use super::collision::COLLISION_VERTICES;
 use super::events::PlayerThrusterChanged;
-use super::{
-    components::*, PLAYER_ACCELERATION, PLAYER_COLLISION_GROUP, PLAYER_MAX_SPEED, PLAYER_SIZE,
-};
-use crate::laser::LASER_COLLISION_GROUP;
+use super::{components::*, PLAYER_ACCELERATION, PLAYER_MAX_SPEED, PLAYER_SIZE};
+use crate::collision_groups::*;
 use crate::{laser::events::SpawnLaser, score::resources::Score, star::components::Star};
-use crate::{player, VIEWPORT_HEIGHT, VIEWPORT_WIDTH};
+use crate::{VIEWPORT_HEIGHT, VIEWPORT_WIDTH};
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use std::f32::consts::PI;
@@ -22,7 +21,7 @@ pub fn spawn_player(mut commands: Commands, asset_server: Res<AssetServer>) {
         })
         .insert(RigidBody::Dynamic)
         .insert(Collider::compound(
-            player::COLLISION_VERTICES
+            COLLISION_VERTICES
                 .iter()
                 .map(|vertices| {
                     (

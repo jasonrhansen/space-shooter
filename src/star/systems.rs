@@ -1,16 +1,11 @@
-use bevy::prelude::*;
-use bevy_rapier2d::prelude::*;
-use rand::prelude::*;
-
-use crate::player::PLAYER_COLLISION_GROUP;
-use crate::VIEWPORT_HEIGHT;
-use crate::VIEWPORT_WIDTH;
-
 use super::components::*;
 use super::resources::*;
-use super::NUM_STARS;
-use super::STAR_COLLISION_GROUP;
-use super::STAR_SIZE;
+use super::*;
+use crate::collision_groups::*;
+use crate::VIEWPORT_HEIGHT;
+use crate::VIEWPORT_WIDTH;
+use bevy_rapier2d::prelude::*;
+use rand::prelude::*;
 
 pub fn spawn_stars(mut commands: Commands, asset_server: Res<AssetServer>) {
     for _ in 0..NUM_STARS {

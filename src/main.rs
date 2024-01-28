@@ -11,6 +11,7 @@ pub mod app_state;
 pub mod asteroid;
 pub mod background;
 pub mod camera;
+pub mod collision_groups;
 pub mod laser;
 pub mod music;
 pub mod player;

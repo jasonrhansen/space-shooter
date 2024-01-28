@@ -1,11 +1,11 @@
 use bevy::prelude::*;
-
 pub mod components;
 pub mod systems;
-
+use crate::AppState;
 use systems::*;
 
-use crate::AppState;
+pub const MENU_BUTTON_WIDTH: f32 = 300.0;
+pub const MENU_BUTTON_HEIGHT: f32 = 80.0;
 
 pub struct UiPlugin;
 
