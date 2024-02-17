@@ -12,6 +12,7 @@ pub mod asteroid;
 pub mod background;
 pub mod camera;
 pub mod collision_groups;
+pub mod health;
 pub mod laser;
 pub mod music;
 pub mod player;
@@ -24,6 +25,7 @@ use camera::spawn_camera;
 use laser::LaserPlugin;
 use music::spawn_music;
 use player::PlayerPlugin;
+use score::resources::Score;
 use score::ScorePlugin;
 use star::StarPlugin;
 use ui::UiPlugin;
@@ -80,9 +82,7 @@ fn main() {
 }
 
 #[derive(Event)]
-pub struct GameOver {
-    pub score: u32,
-}
+pub struct GameOver;
 
 pub fn exit_game(mut exit: EventWriter<AppExit>, keyboard_input: Res<Input<KeyCode>>) {
     if keyboard_input.just_pressed(KeyCode::Escape) {
@@ -90,9 +90,9 @@ pub fn exit_game(mut exit: EventWriter<AppExit>, keyboard_input: Res<Input<KeyCo
     }
 }
 
-pub fn handle_game_over(mut game_over_reader: EventReader<GameOver>) {
-    for game_over in game_over_reader.read() {
-        println!("Game Over! Score: {}", game_over.score);
+pub fn handle_game_over(mut game_over_reader: EventReader<GameOver>, score: Res<Score>) {
+    if game_over_reader.read().next().is_some() {
+        println!("Game Over! Score: {}", score.value);
     }
 }
 

@@ -12,10 +12,7 @@ pub struct UiPlugin;
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup)
-            .add_systems(
-                Update,
-                update_score_text.run_if(in_state(AppState::Playing)),
-            )
+            .add_systems(Update, (update_health_text, update_score_text))
             .add_systems(
                 Update,
                 interact_with_resume_game_button.run_if(in_state(AppState::Paused)),

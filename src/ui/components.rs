@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
 #[derive(Component)]
+pub struct HealthText;
+
+#[derive(Component)]
 pub struct ScoreText;
 
 #[derive(Component)]

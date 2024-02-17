@@ -23,9 +23,10 @@ impl Plugin for PlayerPlugin {
                 Update,
                 (
                     (player_input, player_movement, wrap_player_movement).chain(),
-                    // player_hit_asteroid,
+                    player_hit_asteroid,
                     player_hit_star,
                     forward_thruster_visibility,
+                    player_damage_timer,
                 )
                     .run_if(in_state(AppState::Playing)),
             );

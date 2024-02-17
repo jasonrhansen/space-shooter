@@ -1,7 +1,9 @@
 use super::events::PlayerThrusterChanged;
 use super::resources::PlayerCollisionConvexShapes;
 use super::{components::*, PLAYER_ACCELERATION, PLAYER_MAX_SPEED, PLAYER_SIZE};
-use crate::collision_groups::*;
+use crate::asteroid::components::Asteroid;
+use crate::health::Health;
+use crate::{collision_groups::*, GameOver};
 use crate::{laser::events::SpawnLaser, score::resources::Score, star::components::Star};
 use crate::{VIEWPORT_HEIGHT, VIEWPORT_WIDTH};
 use bevy::prelude::*;
@@ -19,7 +21,9 @@ pub fn spawn_player(
         .spawn(Player {
             direction: Vec2::new(0.0, 1.0),
             velocity: Vec2::ZERO,
+            take_damage: true,
         })
+        .insert(Health::full())
         .insert(SpriteBundle {
             transform: Transform::from_xyz(VIEWPORT_WIDTH / 2.0, VIEWPORT_HEIGHT / 2.0, 0.0),
             texture: asset_server.load("images/sprites/playerShip1_red.png"),
@@ -42,7 +46,7 @@ pub fn spawn_player(
             PLAYER_COLLISION_GROUP,
             !LASER_COLLISION_GROUP,
         ))
-        .insert(ActiveEvents::COLLISION_EVENTS)
+        .insert(ActiveEvents::COLLISION_EVENTS | ActiveEvents::CONTACT_FORCE_EVENTS)
         .insert(CollidingEntities::default())
         .with_children(|parent| {
             parent.spawn(ForwardThruster).insert(SpriteBundle {
@@ -151,30 +155,75 @@ pub fn wrap_player_movement(mut player_query: Query<&mut Transform, With<Player>
     }
 }
 
+pub fn player_hit_asteroid(
+    mut commands: Commands,
+    mut game_over_writer: EventWriter<GameOver>,
+    mut player_query: Query<(Entity, &mut Player, &CollidingEntities, &mut Health)>,
+    asteroid_query: Query<Entity, With<Asteroid>>,
+) {
+    if let Ok((player_entity, mut player, colliding_entities, mut player_health)) =
+        player_query.get_single_mut()
+    {
+        if !player.take_damage {
+            return;
+        }
+
+        for colliding_entity in colliding_entities.iter() {
+            if asteroid_query.contains(colliding_entity) {
+                player_health.percent = player_health.percent.saturating_sub(10);
+                player.take_damage = false;
+
+                commands
+                    .entity(player_entity)
+                    .insert(DamageTime(Timer::from_seconds(1.0, TimerMode::Once)));
+
+                if player_health.percent == 0 {
+                    commands.entity(player_entity).despawn_recursive();
+                    game_over_writer.send(GameOver);
+                }
+            }
+        }
+    }
+}
+
+pub fn player_damage_timer(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut player_query: Query<(Entity, &mut Player, &mut DamageTime), With<Player>>,
+) {
+    if let Ok((player_entity, mut player, mut damage_time)) = player_query.get_single_mut() {
+        damage_time.0.tick(time.delta());
+
+        if damage_time.0.just_finished() {
+            player.take_damage = true;
+            commands.entity(player_entity).remove::<DamageTime>();
+        }
+    }
+}
+
 // pub fn player_hit_asteroid(
 //     mut commands: Commands,
+//     mut contact_force_events: EventReader<ContactForceEvent>,
 //     mut game_over_writer: EventWriter<GameOver>,
-//     player_query: Query<(Entity, &Transform), With<Player>>,
-//     asteroid_query: Query<&Transform, With<Asteroid>>,
-//     asset_server: Res<AssetServer>,
-//     score: Res<Score>,
+//     mut player_query: Query<(Entity, &mut Health), With<Player>>,
+//     asteroid_query: Query<Entity, With<Asteroid>>,
 // ) {
-//     if let Ok((player_entity, player_transform)) = player_query.get_single() {
-//         let player_radius = PLAYER_SIZE / 2.0;
-//         let asteroid_radius = ASTEROID_SIZE / 2.0;
+//     if let Ok((player_entity, mut player_health)) = player_query.get_single_mut() {
+//         for contact_force_event in contact_force_events.read() {
+//             let entity1 = contact_force_event.collider1;
+//             let entity2 = contact_force_event.collider2;
 //
-//         for asteroid_transform in asteroid_query.iter() {
-//             let distance = player_transform
-//                 .translation
-//                 .distance(asteroid_transform.translation);
-//             if distance < player_radius + asteroid_radius {
-//                 let sound_effect = asset_server.load("audio/explosionCrunch_000.ogg");
-//                 commands.spawn(AudioBundle {
-//                     source: sound_effect,
-//                     settings: PlaybackSettings::ONCE,
-//                 });
-//                 commands.entity(player_entity).despawn();
-//                 game_over_writer.send(GameOver { score: score.value });
+//             for asteroid_entity in asteroid_query.iter() {
+//                 if entity1 == player_entity && entity2 == asteroid_entity
+//                     || entity1 == asteroid_entity && entity2 == player_entity
+//                 {
+//                     player_health.percent = player_health.percent.saturating_sub(10);
+//
+//                     if player_health.percent == 0 {
+//                         commands.entity(player_entity).despawn_recursive();
+//                         game_over_writer.send(GameOver);
+//                     }
+//                 }
 //             }
 //         }
 //     }

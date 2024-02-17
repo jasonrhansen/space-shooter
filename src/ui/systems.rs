@@ -1,8 +1,25 @@
 use super::components::*;
 use super::*;
-use crate::{score::resources::Score, AppState};
+use crate::{health::Health, player::components::Player, score::resources::Score, AppState};
 
 pub fn setup(mut commands: Commands) {
+    commands.spawn((
+        TextBundle::from_section(
+            "Health: 100%",
+            TextStyle {
+                font_size: 32.0,
+                ..default()
+            },
+        )
+        .with_text_alignment(TextAlignment::Left)
+        .with_style(Style {
+            position_type: PositionType::Absolute,
+            bottom: Val::Px(5.0),
+            left: Val::Px(5.0),
+            ..default()
+        }),
+        ScoreText,
+    ));
     commands.spawn((
         TextBundle::from_section(
             "Score: 0",
@@ -11,15 +28,26 @@ pub fn setup(mut commands: Commands) {
                 ..default()
             },
         )
-        .with_text_alignment(TextAlignment::Center)
+        .with_text_alignment(TextAlignment::Right)
         .with_style(Style {
             position_type: PositionType::Absolute,
             bottom: Val::Px(5.0),
             right: Val::Px(5.0),
             ..default()
         }),
-        ScoreText,
+        HealthText,
     ));
+}
+
+pub fn update_health_text(
+    mut health_text_query: Query<&mut Text, With<HealthText>>,
+    player_health_query: Query<&Health, With<Player>>,
+) {
+    if let Ok(health) = player_health_query.get_single() {
+        if let Ok(mut text) = health_text_query.get_single_mut() {
+            text.sections[0].value = format!("Health: {}%", health.percent);
+        }
+    }
 }
 
 pub fn update_score_text(score: Res<Score>, mut query: Query<&mut Text, With<ScoreText>>) {
