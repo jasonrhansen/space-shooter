@@ -82,24 +82,26 @@ pub fn player_input(
     mut spawn_laser_writer: EventWriter<SpawnLaser>,
     mut thruster_writer: EventWriter<PlayerThrusterChanged>,
     mut player_query: Query<(&mut Player, &Transform), With<Player>>,
-    keyboard_input: Res<Input<KeyCode>>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
     time: Res<Time>,
 ) {
     if let Ok((mut player, transform)) = player_query.get_single_mut() {
-        if keyboard_input.pressed(KeyCode::Left) || keyboard_input.pressed(KeyCode::A) {
+        if keyboard_input.pressed(KeyCode::ArrowLeft) || keyboard_input.pressed(KeyCode::KeyA) {
             player.direction = player.direction.rotate(Vec2::from_angle(PI / 32.0));
         }
-        if keyboard_input.pressed(KeyCode::Right) || keyboard_input.pressed(KeyCode::D) {
+        if keyboard_input.pressed(KeyCode::ArrowRight) || keyboard_input.pressed(KeyCode::KeyD) {
             player.direction = player.direction.rotate(Vec2::from_angle(-PI / 32.0));
         }
 
-        if keyboard_input.pressed(KeyCode::Up) || keyboard_input.pressed(KeyCode::W) {
+        if keyboard_input.pressed(KeyCode::ArrowUp) || keyboard_input.pressed(KeyCode::KeyW) {
             let v = player.direction * PLAYER_ACCELERATION * time.delta_seconds();
             player.velocity += v;
             player.velocity = player.velocity.clamp_length_max(PLAYER_MAX_SPEED);
 
             thruster_writer.send(PlayerThrusterChanged::Forward);
-        } else if keyboard_input.pressed(KeyCode::Down) || keyboard_input.pressed(KeyCode::S) {
+        } else if keyboard_input.pressed(KeyCode::ArrowDown)
+            || keyboard_input.pressed(KeyCode::KeyS)
+        {
             let v = player.direction * PLAYER_ACCELERATION * time.delta_seconds();
             player.velocity -= v;
             player.velocity = player.velocity.clamp_length_max(PLAYER_MAX_SPEED);

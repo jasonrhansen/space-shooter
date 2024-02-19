@@ -1,7 +1,4 @@
-use bevy::{
-    audio::{Volume, VolumeLevel},
-    prelude::*,
-};
+use bevy::{audio::Volume, prelude::*};
 
 #[derive(Component)]
 pub struct Music;
@@ -10,7 +7,7 @@ pub fn spawn_music(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         AudioBundle {
             source: asset_server.load("audio/sci-fi-dramatic-theme.ogg"),
-            settings: PlaybackSettings::LOOP.with_volume(Volume::Relative(VolumeLevel::new(0.5))),
+            settings: PlaybackSettings::LOOP.with_volume(Volume::new(0.5)),
         },
         Music,
     ));

@@ -51,7 +51,7 @@ fn main() {
             RapierPhysicsPlugin::<NoUserData>::default(),
             RapierDebugRenderPlugin::default().disabled(),
         ))
-        .add_state::<AppState>()
+        .init_state::<AppState>()
         .add_event::<GameOver>()
         .add_systems(
             Startup,
@@ -76,7 +76,7 @@ fn main() {
         )
         .add_systems(
             Update,
-            handle_physics_active.run_if(state_changed::<AppState>()),
+            handle_physics_active.run_if(state_changed::<AppState>),
         )
         .run();
 }
@@ -84,7 +84,7 @@ fn main() {
 #[derive(Event)]
 pub struct GameOver;
 
-pub fn exit_game(mut exit: EventWriter<AppExit>, keyboard_input: Res<Input<KeyCode>>) {
+pub fn exit_game(mut exit: EventWriter<AppExit>, keyboard_input: Res<ButtonInput<KeyCode>>) {
     if keyboard_input.just_pressed(KeyCode::Escape) {
         exit.send(AppExit);
     }
@@ -99,9 +99,9 @@ pub fn handle_game_over(mut game_over_reader: EventReader<GameOver>, score: Res<
 pub fn update_paused_state(
     app_state: ResMut<State<AppState>>,
     mut next_app_state: ResMut<NextState<AppState>>,
-    keyboard_input: Res<Input<KeyCode>>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
 ) {
-    if keyboard_input.just_pressed(KeyCode::Return) {
+    if keyboard_input.just_pressed(KeyCode::Enter) {
         if app_state.as_ref() == &AppState::Paused {
             next_app_state.set(AppState::Playing);
         } else if app_state.as_ref() == &AppState::Playing {
@@ -124,7 +124,7 @@ pub fn handle_physics_active(
 
 pub fn toggle_debug_render(
     mut debug_context: ResMut<DebugRenderContext>,
-    keyboard_input: Res<Input<KeyCode>>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
 ) {
     if keyboard_input.just_pressed(KeyCode::F2) {
         debug_context.enabled = !debug_context.enabled;
