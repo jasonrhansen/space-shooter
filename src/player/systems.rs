@@ -18,36 +18,40 @@ pub fn spawn_player(
     let player_shapes = &collision_shapes.player_shapes;
 
     commands
-        .spawn(Player {
-            direction: Vec2::new(0.0, 1.0),
-            velocity: Vec2::ZERO,
-            take_damage: true,
+        .spawn(PlayerBundle {
+            player: Player {
+                direction: Vec2::new(0.0, 1.0),
+                velocity: Vec2::ZERO,
+                take_damage: true,
+            },
+            health: Health::full(),
+            sprite_bundle: SpriteBundle {
+                transform: Transform::from_xyz(VIEWPORT_WIDTH / 2.0, VIEWPORT_HEIGHT / 2.0, 0.0),
+                texture: asset_server.load("images/sprites/playerShip1_red.png"),
+                ..default()
+            },
+            player_collision_bundle: PlayerCollisionBundle {
+                rigid_body: RigidBody::Dynamic,
+                collider: Collider::compound(
+                    player_shapes
+                        .iter()
+                        .map(|vertices| {
+                            (
+                                Vec2::ZERO,
+                                0.0,
+                                Collider::convex_hull(vertices.as_ref()).unwrap(),
+                            )
+                        })
+                        .collect(),
+                ),
+                collision_groups: CollisionGroups::new(
+                    PLAYER_COLLISION_GROUP,
+                    !LASER_COLLISION_GROUP,
+                ),
+                active_events: ActiveEvents::COLLISION_EVENTS | ActiveEvents::CONTACT_FORCE_EVENTS,
+                colliding_entities: CollidingEntities::default(),
+            },
         })
-        .insert(Health::full())
-        .insert(SpriteBundle {
-            transform: Transform::from_xyz(VIEWPORT_WIDTH / 2.0, VIEWPORT_HEIGHT / 2.0, 0.0),
-            texture: asset_server.load("images/sprites/playerShip1_red.png"),
-            ..default()
-        })
-        .insert(RigidBody::Dynamic)
-        .insert(Collider::compound(
-            player_shapes
-                .iter()
-                .map(|vertices| {
-                    (
-                        Vec2::ZERO,
-                        0.0,
-                        Collider::convex_hull(vertices.as_ref()).unwrap(),
-                    )
-                })
-                .collect(),
-        ))
-        .insert(CollisionGroups::new(
-            PLAYER_COLLISION_GROUP,
-            !LASER_COLLISION_GROUP,
-        ))
-        .insert(ActiveEvents::COLLISION_EVENTS | ActiveEvents::CONTACT_FORCE_EVENTS)
-        .insert(CollidingEntities::default())
         .with_children(|parent| {
             parent.spawn(ForwardThruster).insert(SpriteBundle {
                 transform: Transform::from_xyz(-20.0, -PLAYER_SIZE / 2.0 - 10.0, 0.0),
