@@ -25,7 +25,6 @@ use camera::spawn_camera;
 use laser::LaserPlugin;
 use music::spawn_music;
 use player::PlayerPlugin;
-use score::resources::Score;
 use score::ScorePlugin;
 use star::StarPlugin;
 use ui::UiPlugin;
@@ -53,9 +52,16 @@ fn main() {
         ))
         .init_state::<AppState>()
         .add_event::<GameOver>()
+        .add_event::<NewGame>()
         .add_systems(
             Startup,
-            (setup_physics, spawn_camera, spawn_background, spawn_music),
+            (
+                setup_physics,
+                spawn_camera,
+                spawn_background,
+                spawn_music,
+                new_game,
+            ),
         )
         .add_plugins((
             AsteroidPlugin,
@@ -68,16 +74,13 @@ fn main() {
         .add_systems(
             Update,
             (
+                handle_physics_active.run_if(state_changed::<AppState>),
                 exit_game,
-                handle_game_over,
                 update_paused_state,
                 toggle_debug_render,
             ),
         )
-        .add_systems(
-            Update,
-            handle_physics_active.run_if(state_changed::<AppState>),
-        )
+        .add_systems(PostUpdate, handle_game_over)
         .run();
 }
 
@@ -90,9 +93,12 @@ pub fn exit_game(mut exit: EventWriter<AppExit>, keyboard_input: Res<ButtonInput
     }
 }
 
-pub fn handle_game_over(mut game_over_reader: EventReader<GameOver>, score: Res<Score>) {
+pub fn handle_game_over(
+    mut game_over_reader: EventReader<GameOver>,
+    mut next_app_state: ResMut<NextState<AppState>>,
+) {
     if game_over_reader.read().next().is_some() {
-        println!("Game Over! Score: {}", score.value);
+        next_app_state.set(AppState::GameOver);
     }
 }
 
@@ -129,4 +135,11 @@ pub fn toggle_debug_render(
     if keyboard_input.just_pressed(KeyCode::F2) {
         debug_context.enabled = !debug_context.enabled;
     }
+}
+
+#[derive(Event)]
+pub struct NewGame;
+
+pub fn new_game(mut new_game_event: EventWriter<NewGame>) {
+    new_game_event.send(NewGame);
 }

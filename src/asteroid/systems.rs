@@ -4,6 +4,7 @@ use super::ASTEROID_SIZE;
 use super::ASTEROID_SPEED;
 use super::NUM_ASTEROIDS;
 use super::PLAYER_SAFE_RADIUS;
+use crate::NewGame;
 use crate::VIEWPORT_HEIGHT;
 use crate::VIEWPORT_WIDTH;
 use bevy::prelude::*;
@@ -11,11 +12,21 @@ use bevy_rapier2d::prelude::*;
 use rand::prelude::*;
 use std::f32::consts::PI;
 
-pub fn spawn_asteroids(
+pub fn new_game_spawn_asteroids(
+    mut new_game_reader: EventReader<NewGame>,
     mut commands: Commands,
+    asteroids_query: Query<Entity, With<Asteroid>>,
     asset_server: Res<AssetServer>,
     collision_shapes: Res<AsteroidCollisionConvexShapes>,
 ) {
+    if new_game_reader.read().next().is_none() {
+        return;
+    }
+
+    for entity in asteroids_query.iter() {
+        commands.entity(entity).despawn();
+    }
+
     let viewport_center = Vec2::new(VIEWPORT_WIDTH / 2.0, VIEWPORT_HEIGHT / 2.0);
     let asteroid_shapes = &collision_shapes.asteroid_shapes;
 

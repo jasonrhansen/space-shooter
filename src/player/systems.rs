@@ -3,18 +3,28 @@ use super::resources::PlayerCollisionConvexShapes;
 use super::{components::*, PLAYER_ACCELERATION, PLAYER_MAX_SPEED, PLAYER_SIZE};
 use crate::asteroid::components::Asteroid;
 use crate::health::Health;
-use crate::{collision_groups::*, GameOver};
+use crate::{collision_groups::*, GameOver, NewGame};
 use crate::{laser::events::SpawnLaser, score::resources::Score, star::components::Star};
 use crate::{VIEWPORT_HEIGHT, VIEWPORT_WIDTH};
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use std::f32::consts::PI;
 
-pub fn spawn_player(
+pub fn new_game_spawn_player(
+    mut new_game_reader: EventReader<NewGame>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     collision_shapes: Res<PlayerCollisionConvexShapes>,
+    player_query: Query<Entity, With<Player>>,
 ) {
+    if new_game_reader.read().next().is_none() {
+        return;
+    }
+
+    for entity in player_query.iter() {
+        commands.entity(entity).despawn_recursive();
+    }
+
     let player_shapes = &collision_shapes.player_shapes;
 
     commands
@@ -24,7 +34,7 @@ pub fn spawn_player(
                 velocity: Vec2::ZERO,
                 take_damage: true,
             },
-            health: Health::full(),
+            health: Health { percent: 10 },
             sprite_bundle: SpriteBundle {
                 transform: Transform::from_xyz(VIEWPORT_WIDTH / 2.0, VIEWPORT_HEIGHT / 2.0, 0.0),
                 texture: asset_server.load("images/sprites/playerShip1_red.png"),

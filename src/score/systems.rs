@@ -1,6 +1,14 @@
 use super::resources::*;
-use crate::GameOver;
+use crate::{GameOver, NewGame};
 use bevy::prelude::*;
+
+pub fn new_game_reset_score(mut new_game_reader: EventReader<NewGame>, mut score: ResMut<Score>) {
+    if new_game_reader.read().next().is_none() {
+        return;
+    }
+
+    score.value = 0;
+}
 
 pub fn update_high_scores(
     mut game_over_reader: EventReader<GameOver>,

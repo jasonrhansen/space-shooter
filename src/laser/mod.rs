@@ -17,7 +17,12 @@ impl Plugin for LaserPlugin {
         app.add_event::<SpawnLaser>()
             .add_systems(
                 Update,
-                (despawn_offscreen_lasers, spawn_lasers).run_if(in_state(AppState::Playing)),
+                (
+                    new_game_despawn_lasers,
+                    despawn_offscreen_lasers,
+                    spawn_lasers,
+                )
+                    .run_if(in_state(AppState::Playing)),
             )
             .add_systems(PostUpdate, laser_hit_asteroid);
     }

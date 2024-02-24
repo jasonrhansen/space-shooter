@@ -14,3 +14,9 @@ pub struct ResumeGameButton;
 
 #[derive(Component)]
 pub struct QuitGameButton;
+
+#[derive(Component)]
+pub struct GameOverMenu;
+
+#[derive(Component)]
+pub struct NewGameButton;

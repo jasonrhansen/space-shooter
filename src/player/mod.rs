@@ -18,10 +18,10 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<PlayerCollisionConvexShapes>()
             .add_event::<PlayerThrusterChanged>()
-            .add_systems(Startup, spawn_player)
             .add_systems(
                 Update,
                 (
+                    new_game_spawn_player,
                     (player_input, player_movement, wrap_player_movement).chain(),
                     player_hit_asteroid,
                     player_hit_star,

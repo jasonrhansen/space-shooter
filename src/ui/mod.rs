@@ -12,12 +12,22 @@ pub struct UiPlugin;
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup)
-            .add_systems(Update, (update_health_text, update_score_text))
             .add_systems(
                 Update,
-                interact_with_resume_game_button.run_if(in_state(AppState::Paused)),
+                (
+                    resume_game_button_action.run_if(in_state(AppState::Paused)),
+                    (
+                        button_interaction_color,
+                        new_game_button_action,
+                        quit_game_button_action,
+                    )
+                        .run_if(in_state(AppState::Paused).or_else(in_state(AppState::GameOver))),
+                ),
             )
+            .add_systems(PostUpdate, (update_health_text, update_score_text))
             .add_systems(OnEnter(AppState::Paused), spawn_paused_screen)
-            .add_systems(OnExit(AppState::Paused), despawn_paused_screen);
+            .add_systems(OnExit(AppState::Paused), despawn_paused_screen)
+            .add_systems(OnEnter(AppState::GameOver), spawn_game_over_screen)
+            .add_systems(OnExit(AppState::GameOver), despawn_game_over_screen);
     }
 }

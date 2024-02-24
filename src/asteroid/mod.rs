@@ -18,10 +18,10 @@ pub struct AsteroidPlugin;
 impl Plugin for AsteroidPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<resources::AsteroidCollisionConvexShapes>()
-            .add_systems(Startup, spawn_asteroids)
             .add_systems(
                 Update,
-                wrap_asteroid_movement.run_if(in_state(AppState::Playing)),
+                (new_game_spawn_asteroids, wrap_asteroid_movement)
+                    .run_if(in_state(AppState::Playing)),
             );
     }
 }
