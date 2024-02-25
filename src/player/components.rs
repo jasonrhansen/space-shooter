@@ -17,6 +17,9 @@ pub struct Player {
 pub struct DamageTime(pub Timer);
 
 #[derive(Component)]
+pub struct DeathTime(pub Timer);
+
+#[derive(Component)]
 pub struct ForwardThruster;
 
 #[derive(Component)]

@@ -1,6 +1,6 @@
-use super::events::{PlayerDeath, PlayerThrusterChanged};
+use super::events::PlayerThrusterChanged;
 use super::resources::{PlayerAssets, PlayerCollisionConvexShapes};
-use super::{components::*, PLAYER_ACCELERATION, PLAYER_MAX_SPEED, PLAYER_SIZE};
+use super::{components::*, PlayerState, PLAYER_ACCELERATION, PLAYER_MAX_SPEED, PLAYER_SIZE};
 use crate::asteroid::components::Asteroid;
 use crate::health::Health;
 use crate::{collision_groups::*, GameOver, NewGame};
@@ -23,10 +23,13 @@ pub fn new_game_spawn_player(
     player_assets: Res<PlayerAssets>,
     collision_shapes: Res<PlayerCollisionConvexShapes>,
     player_query: Query<Entity, With<Player>>,
+    mut next_player_state: ResMut<NextState<PlayerState>>,
 ) {
     if new_game_reader.read().next().is_none() {
         return;
     }
+
+    next_player_state.set(PlayerState::Alive);
 
     for entity in player_query.iter() {
         commands.entity(entity).despawn_recursive();
@@ -180,9 +183,9 @@ pub fn wrap_player_movement(mut player_query: Query<&mut Transform, With<Player>
 
 pub fn player_hit_asteroid(
     mut commands: Commands,
-    mut player_died_writer: EventWriter<PlayerDeath>,
     mut player_query: Query<(Entity, &mut Player, &CollidingEntities, &mut Health)>,
     asteroid_query: Query<Entity, With<Asteroid>>,
+    mut next_player_state: ResMut<NextState<PlayerState>>,
 ) {
     if let Ok((player_entity, mut player, colliding_entities, mut player_health)) =
         player_query.get_single_mut()
@@ -196,10 +199,9 @@ pub fn player_hit_asteroid(
                 player_health.percent = player_health.percent.saturating_sub(10);
 
                 if player_health.percent == 0 {
-                    player_died_writer.send(PlayerDeath);
+                    next_player_state.set(PlayerState::Dead);
                 } else {
                     player.take_damage = false;
-
                     commands
                         .entity(player_entity)
                         .insert(DamageTime(Timer::from_seconds(1.0, TimerMode::Once)));
@@ -212,17 +214,33 @@ pub fn player_hit_asteroid(
 pub fn player_death(
     player_assets: Res<PlayerAssets>,
     mut commands: Commands,
-    mut player_died_reader: EventReader<PlayerDeath>,
-    mut game_over_writer: EventWriter<GameOver>,
     player_query: Query<Entity, With<Player>>,
 ) {
-    if player_died_reader.read().next().is_some() {
-        for entity in player_query.iter() {
-            commands.spawn(AudioBundle {
-                source: player_assets.explosion_sound.clone(),
-                settings: PlaybackSettings::ONCE,
-            });
-            commands.entity(entity).despawn_recursive();
+    for player_entity in player_query.iter() {
+        commands.spawn(AudioBundle {
+            source: player_assets.explosion_sound.clone(),
+            settings: PlaybackSettings::ONCE,
+        });
+
+        commands.entity(player_entity).insert(Visibility::Hidden);
+
+        commands
+            .entity(player_entity)
+            .insert(DeathTime(Timer::from_seconds(2.0, TimerMode::Once)));
+    }
+}
+
+pub fn player_death_timer(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut player_query: Query<(Entity, &mut DeathTime), With<Player>>,
+    mut game_over_writer: EventWriter<GameOver>,
+) {
+    if let Ok((player_entity, mut death_time)) = player_query.get_single_mut() {
+        death_time.0.tick(time.delta());
+
+        if death_time.0.just_finished() {
+            commands.entity(player_entity).despawn_recursive();
             game_over_writer.send(GameOver);
         }
     }
