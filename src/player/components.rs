@@ -41,3 +41,23 @@ pub struct PlayerCollisionBundle {
     pub active_events: ActiveEvents,
     pub colliding_entities: CollidingEntities,
 }
+
+#[derive(Component, Deref, DerefMut)]
+pub struct AnimationTimer(pub Timer);
+
+#[derive(Component)]
+pub struct AnimationIndices {
+    pub first: usize,
+    pub last: usize,
+}
+
+#[derive(Component)]
+pub struct PlayerExplosion;
+
+#[derive(Bundle)]
+pub struct PlayerExplosionBundle {
+    pub player_explosion: PlayerExplosion,
+    pub sprite_sheet_bundle: SpriteSheetBundle,
+    pub animation_indices: AnimationIndices,
+    pub animation_timer: AnimationTimer,
+}

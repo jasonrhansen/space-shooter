@@ -48,13 +48,14 @@ impl Plugin for PlayerPlugin {
                         player_damage_timer,
                     )
                         .run_if(in_state(PlayerState::Alive)),
-                    player_death_timer.run_if(in_state(PlayerState::Dead)),
+                    (player_death_timer, animate_player_explosion)
+                        .run_if(in_state(PlayerState::Dead)),
                 )
                     .run_if(in_state(AppState::Playing)),
             )
             .add_systems(
                 OnEnter(PlayerState::Dead),
-                player_death.after(UpdateSet::Ui),
+                (player_death, spawn_player_explosion).after(UpdateSet::Ui),
             );
     }
 }

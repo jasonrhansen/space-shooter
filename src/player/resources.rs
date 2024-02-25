@@ -5,6 +5,7 @@ use bevy::prelude::*;
 pub struct PlayerAssets {
     pub ship_texture: Handle<Image>,
     pub fire_texture: Handle<Image>,
+    pub explosion_texture: Handle<Image>,
     pub explosion_sound: Handle<AudioSource>,
     pub star_sound: Handle<AudioSource>,
 }

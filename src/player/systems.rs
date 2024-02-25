@@ -13,6 +13,7 @@ use std::f32::consts::PI;
 pub fn load_player_assets(asset_server: Res<AssetServer>, mut player_assets: ResMut<PlayerAssets>) {
     player_assets.ship_texture = asset_server.load("images/sprites/playerShip1_red.png");
     player_assets.fire_texture = asset_server.load("images/sprites/fire13.png");
+    player_assets.explosion_texture = asset_server.load("images/sprites/explosion.png");
     player_assets.explosion_sound = asset_server.load("audio/explosionCrunch_000.ogg");
     player_assets.star_sound = asset_server.load("audio/laserLarge_000.ogg");
 }
@@ -317,6 +318,61 @@ pub fn forward_thruster_visibility(
                     }
                 }
             }
+        }
+    }
+}
+
+pub fn spawn_player_explosion(
+    mut commands: Commands,
+    player_query: Query<&GlobalTransform, With<Player>>,
+    player_assets: Res<PlayerAssets>,
+    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+) {
+    if let Ok(player_global_transform) = player_query.get_single() {
+        let texture = player_assets.explosion_texture.clone();
+        let layout = TextureAtlasLayout::from_grid(Vec2::new(276.0, 306.5), 5, 2, None, None);
+        let texture_atlas_layout = texture_atlas_layouts.add(layout);
+        let animation_indices = AnimationIndices { first: 0, last: 9 };
+        let player_location = player_global_transform.translation().xy();
+        commands.spawn(PlayerExplosionBundle {
+            player_explosion: PlayerExplosion,
+            sprite_sheet_bundle: SpriteSheetBundle {
+                texture,
+                atlas: TextureAtlas {
+                    layout: texture_atlas_layout,
+                    index: animation_indices.first,
+                },
+                visibility: Visibility::Visible,
+                transform: Transform::from_xyz(player_location.x, player_location.y, 5.0),
+                ..default()
+            },
+            animation_indices,
+            animation_timer: AnimationTimer(Timer::from_seconds(0.075, TimerMode::Repeating)),
+        });
+    }
+}
+
+pub fn animate_player_explosion(
+    time: Res<Time>,
+    mut commands: Commands,
+    mut query: Query<
+        (
+            Entity,
+            &AnimationIndices,
+            &mut AnimationTimer,
+            &mut TextureAtlas,
+        ),
+        With<PlayerExplosion>,
+    >,
+) {
+    for (entity, indices, mut timer, mut atlas) in &mut query {
+        timer.tick(time.delta());
+        if timer.just_finished() {
+            if atlas.index == indices.last {
+                commands.entity(entity).despawn_recursive();
+            } else {
+                atlas.index += 1
+            };
         }
     }
 }
