@@ -13,11 +13,11 @@ pub struct Player {
     pub take_damage: bool,
 }
 
-#[derive(Component)]
-pub struct DamageTime(pub Timer);
+#[derive(Component, Deref, DerefMut)]
+pub struct DamageTimer(pub Timer);
 
-#[derive(Component)]
-pub struct DeathTime(pub Timer);
+#[derive(Component, Deref, DerefMut)]
+pub struct DeathTimer(pub Timer);
 
 #[derive(Component)]
 pub struct ForwardThruster;

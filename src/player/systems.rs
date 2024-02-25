@@ -205,7 +205,7 @@ pub fn player_hit_asteroid(
                     player.take_damage = false;
                     commands
                         .entity(player_entity)
-                        .insert(DamageTime(Timer::from_seconds(1.0, TimerMode::Once)));
+                        .insert(DamageTimer(Timer::from_seconds(1.0, TimerMode::Once)));
                 }
             }
         }
@@ -227,20 +227,20 @@ pub fn player_death(
 
         commands
             .entity(player_entity)
-            .insert(DeathTime(Timer::from_seconds(2.0, TimerMode::Once)));
+            .insert(DeathTimer(Timer::from_seconds(1.5, TimerMode::Once)));
     }
 }
 
 pub fn player_death_timer(
     mut commands: Commands,
     time: Res<Time>,
-    mut player_query: Query<(Entity, &mut DeathTime), With<Player>>,
+    mut player_query: Query<(Entity, &mut DeathTimer), With<Player>>,
     mut game_over_writer: EventWriter<GameOver>,
 ) {
-    if let Ok((player_entity, mut death_time)) = player_query.get_single_mut() {
-        death_time.0.tick(time.delta());
+    if let Ok((player_entity, mut death_timer)) = player_query.get_single_mut() {
+        death_timer.tick(time.delta());
 
-        if death_time.0.just_finished() {
+        if death_timer.just_finished() {
             commands.entity(player_entity).despawn_recursive();
             game_over_writer.send(GameOver);
         }
@@ -250,14 +250,14 @@ pub fn player_death_timer(
 pub fn player_damage_timer(
     mut commands: Commands,
     time: Res<Time>,
-    mut player_query: Query<(Entity, &mut Player, &mut DamageTime), With<Player>>,
+    mut player_query: Query<(Entity, &mut Player, &mut DamageTimer), With<Player>>,
 ) {
-    if let Ok((player_entity, mut player, mut damage_time)) = player_query.get_single_mut() {
-        damage_time.0.tick(time.delta());
+    if let Ok((player_entity, mut player, mut damage_timer)) = player_query.get_single_mut() {
+        damage_timer.tick(time.delta());
 
-        if damage_time.0.just_finished() {
+        if damage_timer.just_finished() {
             player.take_damage = true;
-            commands.entity(player_entity).remove::<DamageTime>();
+            commands.entity(player_entity).remove::<DamageTimer>();
         }
     }
 }
