@@ -2,7 +2,7 @@ pub mod components;
 pub mod resources;
 pub mod systems;
 
-use crate::AppState;
+use crate::{AppState, UpdateSet};
 use bevy::prelude::*;
 use resources::*;
 use systems::*;
@@ -18,7 +18,7 @@ impl Plugin for StarPlugin {
         app.init_resource::<StarSpawnTimer>().add_systems(
             Update,
             (
-                new_game_spawn_stars,
+                new_game_spawn_stars.in_set(UpdateSet::Init),
                 tick_star_spawn_timer,
                 spawn_stars_over_time,
             )

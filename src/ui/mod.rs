@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 pub mod components;
 pub mod systems;
-use crate::AppState;
+use crate::{AppState, UpdateSet};
 use systems::*;
 
 pub const MENU_BUTTON_WIDTH: f32 = 300.0;
@@ -15,6 +15,8 @@ impl Plugin for UiPlugin {
             .add_systems(
                 Update,
                 (
+                    update_health_text,
+                    update_score_text,
                     resume_game_button_action.run_if(in_state(AppState::Paused)),
                     (
                         button_interaction_color,
@@ -22,9 +24,10 @@ impl Plugin for UiPlugin {
                         quit_game_button_action,
                     )
                         .run_if(in_state(AppState::Paused).or_else(in_state(AppState::GameOver))),
-                ),
+                )
+                    .in_set(UpdateSet::Ui)
+                    .after(UpdateSet::Collision),
             )
-            .add_systems(PostUpdate, (update_health_text, update_score_text))
             .add_systems(OnEnter(AppState::Paused), spawn_paused_screen)
             .add_systems(OnExit(AppState::Paused), despawn_paused_screen)
             .add_systems(OnEnter(AppState::GameOver), spawn_game_over_screen)

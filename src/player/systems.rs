@@ -1,4 +1,4 @@
-use super::events::PlayerThrusterChanged;
+use super::events::{PlayerDeath, PlayerThrusterChanged};
 use super::resources::PlayerCollisionConvexShapes;
 use super::{components::*, PLAYER_ACCELERATION, PLAYER_MAX_SPEED, PLAYER_SIZE};
 use crate::asteroid::components::Asteroid;
@@ -173,10 +173,9 @@ pub fn wrap_player_movement(mut player_query: Query<&mut Transform, With<Player>
 
 pub fn player_hit_asteroid(
     mut commands: Commands,
-    mut game_over_writer: EventWriter<GameOver>,
+    mut player_died_writer: EventWriter<PlayerDeath>,
     mut player_query: Query<(Entity, &mut Player, &CollidingEntities, &mut Health)>,
     asteroid_query: Query<Entity, With<Asteroid>>,
-    asset_server: Res<AssetServer>,
 ) {
     if let Ok((player_entity, mut player, colliding_entities, mut player_health)) =
         player_query.get_single_mut()
@@ -188,22 +187,37 @@ pub fn player_hit_asteroid(
         for colliding_entity in colliding_entities.iter() {
             if asteroid_query.contains(colliding_entity) {
                 player_health.percent = player_health.percent.saturating_sub(10);
-                player.take_damage = false;
-
-                commands
-                    .entity(player_entity)
-                    .insert(DamageTime(Timer::from_seconds(1.0, TimerMode::Once)));
 
                 if player_health.percent == 0 {
-                    let sound_effect = asset_server.load("audio/explosionCrunch_000.ogg");
-                    commands.spawn(AudioBundle {
-                        source: sound_effect,
-                        settings: PlaybackSettings::ONCE,
-                    });
-                    commands.entity(player_entity).despawn_recursive();
-                    game_over_writer.send(GameOver);
+                    player_died_writer.send(PlayerDeath);
+                } else {
+                    player.take_damage = false;
+
+                    commands
+                        .entity(player_entity)
+                        .insert(DamageTime(Timer::from_seconds(1.0, TimerMode::Once)));
                 }
             }
+        }
+    }
+}
+
+pub fn player_death(
+    asset_server: Res<AssetServer>,
+    mut commands: Commands,
+    mut player_died_reader: EventReader<PlayerDeath>,
+    mut game_over_writer: EventWriter<GameOver>,
+    player_query: Query<Entity, With<Player>>,
+) {
+    if player_died_reader.read().next().is_some() {
+        for entity in player_query.iter() {
+            let sound_effect = asset_server.load("audio/explosionCrunch_000.ogg");
+            commands.spawn(AudioBundle {
+                source: sound_effect,
+                settings: PlaybackSettings::ONCE,
+            });
+            commands.entity(entity).despawn_recursive();
+            game_over_writer.send(GameOver);
         }
     }
 }
@@ -222,34 +236,6 @@ pub fn player_damage_timer(
         }
     }
 }
-
-// pub fn player_hit_asteroid(
-//     mut commands: Commands,
-//     mut contact_force_events: EventReader<ContactForceEvent>,
-//     mut game_over_writer: EventWriter<GameOver>,
-//     mut player_query: Query<(Entity, &mut Health), With<Player>>,
-//     asteroid_query: Query<Entity, With<Asteroid>>,
-// ) {
-//     if let Ok((player_entity, mut player_health)) = player_query.get_single_mut() {
-//         for contact_force_event in contact_force_events.read() {
-//             let entity1 = contact_force_event.collider1;
-//             let entity2 = contact_force_event.collider2;
-//
-//             for asteroid_entity in asteroid_query.iter() {
-//                 if entity1 == player_entity && entity2 == asteroid_entity
-//                     || entity1 == asteroid_entity && entity2 == player_entity
-//                 {
-//                     player_health.percent = player_health.percent.saturating_sub(10);
-//
-//                     if player_health.percent == 0 {
-//                         commands.entity(player_entity).despawn_recursive();
-//                         game_over_writer.send(GameOver);
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// }
 
 pub fn player_hit_star(
     mut commands: Commands,

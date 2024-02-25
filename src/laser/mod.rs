@@ -3,7 +3,7 @@ pub mod events;
 pub mod systems;
 
 use self::events::SpawnLaser;
-use crate::AppState;
+use crate::{AppState, UpdateSet};
 use bevy::prelude::*;
 use systems::*;
 
@@ -18,7 +18,7 @@ impl Plugin for LaserPlugin {
             .add_systems(
                 Update,
                 (
-                    new_game_despawn_lasers,
+                    new_game_despawn_lasers.in_set(UpdateSet::Init),
                     despawn_offscreen_lasers,
                     spawn_lasers,
                 )

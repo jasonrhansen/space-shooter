@@ -143,3 +143,16 @@ pub struct NewGame;
 pub fn new_game(mut new_game_event: EventWriter<NewGame>) {
     new_game_event.send(NewGame);
 }
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, SystemSet)]
+pub enum UpdateSet {
+    Init,
+    /// Input handling.
+    Input,
+    /// Everything that moves things (works with transforms).
+    Movement,
+    /// Collision detection and resolution.
+    Collision,
+    /// Systems that update the user interface.
+    Ui,
+}

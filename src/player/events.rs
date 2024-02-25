@@ -6,3 +6,6 @@ pub enum PlayerThrusterChanged {
     Backward,
     None,
 }
+
+#[derive(Event)]
+pub struct PlayerDeath;
