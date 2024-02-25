@@ -1,10 +1,10 @@
-use bevy::app::AppExit;
-
 use super::*;
 use super::{components::*, resources::UiAssets};
 use crate::{
     health::Health, player::components::Player, score::resources::Score, AppState, NewGame,
 };
+use bevy::app::AppExit;
+use bevy_kira_audio::prelude::*;
 
 pub fn load_ui_assets(asset_server: Res<AssetServer>, mut ui_assets: ResMut<UiAssets>) {
     ui_assets.pause_sound = asset_server.load("audio/confirmation_001.ogg");
@@ -67,7 +67,7 @@ pub fn update_score_text(score: Res<Score>, mut query: Query<&mut Text, With<Sco
     }
 }
 
-pub fn spawn_paused_screen(mut commands: Commands, ui_assets: Res<UiAssets>) {
+pub fn spawn_paused_screen(mut commands: Commands, ui_assets: Res<UiAssets>, audio: Res<Audio>) {
     commands
         .spawn((
             NodeBundle {
@@ -170,23 +170,18 @@ pub fn spawn_paused_screen(mut commands: Commands, ui_assets: Res<UiAssets>) {
                 });
         });
 
-    commands.spawn(AudioBundle {
-        source: ui_assets.pause_sound.clone(),
-        settings: PlaybackSettings::DESPAWN,
-    });
+    audio.play(ui_assets.pause_sound.clone());
 }
 
 pub fn despawn_paused_screen(
     mut commands: Commands,
     query: Query<Entity, With<PausedMenu>>,
     ui_assets: Res<UiAssets>,
+    audio: Res<Audio>,
 ) {
     if let Ok(entity) = query.get_single() {
         commands.entity(entity).despawn_recursive();
-        commands.spawn(AudioBundle {
-            source: ui_assets.resume_game_sound.clone(),
-            settings: PlaybackSettings::DESPAWN,
-        });
+        audio.play(ui_assets.resume_game_sound.clone());
     }
 }
 
@@ -210,16 +205,13 @@ pub fn button_interaction_color(
 pub fn resume_game_button_action(
     mut button_query: Query<&Interaction, (Changed<Interaction>, With<ResumeGameButton>)>,
     mut app_state_next_state: ResMut<NextState<AppState>>,
-    mut commands: Commands,
     ui_assets: Res<UiAssets>,
+    audio: Res<Audio>,
 ) {
     if let Ok(interaction) = button_query.get_single_mut() {
         if *interaction == Interaction::Pressed {
             app_state_next_state.set(AppState::Playing);
-            commands.spawn(AudioBundle {
-                source: ui_assets.resume_game_sound.clone(),
-                settings: PlaybackSettings::DESPAWN,
-            });
+            audio.play(ui_assets.resume_game_sound.clone());
         }
     }
 }

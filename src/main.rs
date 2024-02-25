@@ -4,6 +4,7 @@ use crate::app_state::AppState;
 use asteroid::AsteroidPlugin;
 use bevy::window::PresentMode;
 use bevy::{app::AppExit, prelude::*};
+use bevy_kira_audio::AudioPlugin;
 use bevy_rapier2d::prelude::*;
 use bevy_rapier2d::{prelude::RapierConfiguration, render::DebugRenderContext};
 
@@ -47,6 +48,7 @@ fn main() {
                 }),
                 ..default()
             }),
+            AudioPlugin,
             RapierPhysicsPlugin::<NoUserData>::default(),
             RapierDebugRenderPlugin::default().disabled(),
         ))

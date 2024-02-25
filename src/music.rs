@@ -1,14 +1,12 @@
-use bevy::{audio::Volume, prelude::*};
+use bevy::prelude::*;
+use bevy_kira_audio::prelude::*;
 
 #[derive(Component)]
 pub struct Music;
 
-pub fn spawn_music(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn((
-        AudioBundle {
-            source: asset_server.load("audio/sci-fi-dramatic-theme.ogg"),
-            settings: PlaybackSettings::LOOP.with_volume(Volume::new(0.2)),
-        },
-        Music,
-    ));
+pub fn spawn_music(asset_server: Res<AssetServer>, audio: Res<Audio>) {
+    audio
+        .play(asset_server.load("audio/sci-fi-dramatic-theme.ogg"))
+        .with_volume(0.2)
+        .looped();
 }

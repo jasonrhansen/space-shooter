@@ -6,6 +6,7 @@ use crate::asteroid::components::Asteroid;
 use crate::{collision_groups::*, NewGame};
 use crate::{VIEWPORT_HEIGHT, VIEWPORT_WIDTH};
 use bevy::prelude::*;
+use bevy_kira_audio::prelude::*;
 use bevy_rapier2d::prelude::*;
 use std::f32::consts::PI;
 
@@ -18,12 +19,10 @@ pub fn spawn_lasers(
     mut commands: Commands,
     mut event_reader: EventReader<SpawnLaser>,
     laser_assets: Res<LaserAssets>,
+    audio: Res<Audio>,
 ) {
     event_reader.read().take(1).for_each(|spawn_laser| {
-        commands.spawn(AudioBundle {
-            source: laser_assets.laser_sound.clone(),
-            settings: PlaybackSettings::DESPAWN,
-        });
+        audio.play(laser_assets.laser_sound.clone());
 
         let transform = Transform::from_xyz(spawn_laser.x, spawn_laser.y, -1.0).with_rotation(
             Quat::from_rotation_z(

@@ -1,5 +1,6 @@
 use crate::ConvexShape;
 use bevy::prelude::*;
+use bevy_kira_audio::AudioSource;
 
 #[derive(Resource, Default)]
 pub struct PlayerAssets {

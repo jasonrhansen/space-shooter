@@ -7,6 +7,7 @@ use crate::{collision_groups::*, GameOver, NewGame};
 use crate::{laser::events::SpawnLaser, score::resources::Score, star::components::Star};
 use crate::{VIEWPORT_HEIGHT, VIEWPORT_WIDTH};
 use bevy::prelude::*;
+use bevy_kira_audio::prelude::*;
 use bevy_rapier2d::prelude::*;
 use std::f32::consts::PI;
 
@@ -216,12 +217,10 @@ pub fn player_death(
     player_assets: Res<PlayerAssets>,
     mut commands: Commands,
     player_query: Query<Entity, With<Player>>,
+    audio: Res<Audio>,
 ) {
     for player_entity in player_query.iter() {
-        commands.spawn(AudioBundle {
-            source: player_assets.explosion_sound.clone(),
-            settings: PlaybackSettings::DESPAWN,
-        });
+        audio.play(player_assets.explosion_sound.clone());
 
         commands.entity(player_entity).insert(Visibility::Hidden);
 
@@ -268,15 +267,13 @@ pub fn player_hit_star(
     player_colliding_entities: Query<&CollidingEntities, With<Player>>,
     stars: Query<Entity, With<Star>>,
     mut score: ResMut<Score>,
+    audio: Res<Audio>,
 ) {
     if let Ok(colliding_entities) = player_colliding_entities.get_single() {
         for star_entity in stars.iter() {
             if colliding_entities.contains(star_entity) {
                 score.value += 1;
-                commands.spawn(AudioBundle {
-                    source: player_assets.star_sound.clone(),
-                    settings: PlaybackSettings::DESPAWN,
-                });
+                audio.play(player_assets.star_sound.clone());
                 commands.entity(star_entity).despawn();
             }
         }
