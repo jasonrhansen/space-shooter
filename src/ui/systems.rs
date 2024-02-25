@@ -172,7 +172,7 @@ pub fn spawn_paused_screen(mut commands: Commands, ui_assets: Res<UiAssets>) {
 
     commands.spawn(AudioBundle {
         source: ui_assets.pause_sound.clone(),
-        settings: PlaybackSettings::ONCE,
+        settings: PlaybackSettings::DESPAWN,
     });
 }
 
@@ -185,7 +185,7 @@ pub fn despawn_paused_screen(
         commands.entity(entity).despawn_recursive();
         commands.spawn(AudioBundle {
             source: ui_assets.resume_game_sound.clone(),
-            settings: PlaybackSettings::ONCE,
+            settings: PlaybackSettings::DESPAWN,
         });
     }
 }
@@ -218,7 +218,7 @@ pub fn resume_game_button_action(
             app_state_next_state.set(AppState::Playing);
             commands.spawn(AudioBundle {
                 source: ui_assets.resume_game_sound.clone(),
-                settings: PlaybackSettings::ONCE,
+                settings: PlaybackSettings::DESPAWN,
             });
         }
     }

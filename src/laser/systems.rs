@@ -22,7 +22,7 @@ pub fn spawn_lasers(
     event_reader.read().take(1).for_each(|spawn_laser| {
         commands.spawn(AudioBundle {
             source: laser_assets.laser_sound.clone(),
-            settings: PlaybackSettings::ONCE,
+            settings: PlaybackSettings::DESPAWN,
         });
 
         let transform = Transform::from_xyz(spawn_laser.x, spawn_laser.y, -1.0).with_rotation(

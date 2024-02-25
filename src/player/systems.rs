@@ -220,7 +220,7 @@ pub fn player_death(
     for player_entity in player_query.iter() {
         commands.spawn(AudioBundle {
             source: player_assets.explosion_sound.clone(),
-            settings: PlaybackSettings::ONCE,
+            settings: PlaybackSettings::DESPAWN,
         });
 
         commands.entity(player_entity).insert(Visibility::Hidden);
@@ -275,7 +275,7 @@ pub fn player_hit_star(
                 score.value += 1;
                 commands.spawn(AudioBundle {
                     source: player_assets.star_sound.clone(),
-                    settings: PlaybackSettings::ONCE,
+                    settings: PlaybackSettings::DESPAWN,
                 });
                 commands.entity(star_entity).despawn();
             }
