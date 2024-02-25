@@ -1,7 +1,9 @@
-use bevy::prelude::*;
 pub mod components;
+pub mod resources;
 pub mod systems;
+
 use crate::{AppState, UpdateSet};
+use bevy::prelude::*;
 use systems::*;
 
 pub const MENU_BUTTON_WIDTH: f32 = 300.0;
@@ -11,7 +13,8 @@ pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup)
+        app.init_resource::<resources::UiAssets>()
+            .add_systems(Startup, (setup, load_ui_assets))
             .add_systems(
                 Update,
                 (

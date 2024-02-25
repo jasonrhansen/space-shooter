@@ -1,5 +1,6 @@
 use super::components::*;
 use super::events::SpawnLaser;
+use super::resources::LaserAssets;
 use super::LASER_SPEED;
 use crate::asteroid::components::Asteroid;
 use crate::{collision_groups::*, NewGame};
@@ -8,15 +9,19 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use std::f32::consts::PI;
 
+pub fn load_laser_assets(asset_server: Res<AssetServer>, mut player_assets: ResMut<LaserAssets>) {
+    player_assets.laser_texture = asset_server.load("images/sprites/laserRed01.png");
+    player_assets.laser_sound = asset_server.load("audio/sfx_laser1.ogg");
+}
+
 pub fn spawn_lasers(
     mut commands: Commands,
     mut event_reader: EventReader<SpawnLaser>,
-    asset_server: Res<AssetServer>,
+    laser_assets: Res<LaserAssets>,
 ) {
     event_reader.read().take(1).for_each(|spawn_laser| {
-        let sound_effect = asset_server.load("audio/sfx_laser1.ogg");
         commands.spawn(AudioBundle {
-            source: sound_effect,
+            source: laser_assets.laser_sound.clone(),
             settings: PlaybackSettings::ONCE,
         });
 
@@ -29,7 +34,7 @@ pub fn spawn_lasers(
             .spawn(Laser)
             .insert(SpriteBundle {
                 transform,
-                texture: asset_server.load("images/sprites/laserRed01.png"),
+                texture: laser_assets.laser_texture.clone(),
                 ..default()
             })
             .insert(Velocity::linear(

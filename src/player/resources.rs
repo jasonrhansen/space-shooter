@@ -1,6 +1,14 @@
 use crate::ConvexShape;
 use bevy::prelude::*;
 
+#[derive(Resource, Default)]
+pub struct PlayerAssets {
+    pub ship_texture: Handle<Image>,
+    pub fire_texture: Handle<Image>,
+    pub explosion_sound: Handle<AudioSource>,
+    pub star_sound: Handle<AudioSource>,
+}
+
 #[derive(Resource)]
 pub struct PlayerCollisionConvexShapes {
     pub player_shapes: Box<[ConvexShape]>,

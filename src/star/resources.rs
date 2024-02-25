@@ -1,6 +1,11 @@
 use super::STAR_SPAWN_TIME;
 use bevy::prelude::*;
 
+#[derive(Resource, Default)]
+pub struct StarAssets {
+    pub star_texture: Handle<Image>,
+}
+
 #[derive(Resource)]
 pub struct StarSpawnTimer {
     pub timer: Timer,

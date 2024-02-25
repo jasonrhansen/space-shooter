@@ -1,10 +1,15 @@
 use bevy::app::AppExit;
 
-use super::components::*;
 use super::*;
+use super::{components::*, resources::UiAssets};
 use crate::{
     health::Health, player::components::Player, score::resources::Score, AppState, NewGame,
 };
+
+pub fn load_ui_assets(asset_server: Res<AssetServer>, mut ui_assets: ResMut<UiAssets>) {
+    ui_assets.pause_sound = asset_server.load("audio/confirmation_001.ogg");
+    ui_assets.resume_game_sound = asset_server.load("audio/confirmation_002.ogg");
+}
 
 pub fn setup(mut commands: Commands) {
     commands.spawn((
@@ -62,7 +67,7 @@ pub fn update_score_text(score: Res<Score>, mut query: Query<&mut Text, With<Sco
     }
 }
 
-pub fn spawn_paused_screen(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn spawn_paused_screen(mut commands: Commands, ui_assets: Res<UiAssets>) {
     commands
         .spawn((
             NodeBundle {
@@ -165,9 +170,8 @@ pub fn spawn_paused_screen(mut commands: Commands, asset_server: Res<AssetServer
                 });
         });
 
-    let sound_effect = asset_server.load("audio/confirmation_001.ogg");
     commands.spawn(AudioBundle {
-        source: sound_effect,
+        source: ui_assets.pause_sound.clone(),
         settings: PlaybackSettings::ONCE,
     });
 }
@@ -175,13 +179,12 @@ pub fn spawn_paused_screen(mut commands: Commands, asset_server: Res<AssetServer
 pub fn despawn_paused_screen(
     mut commands: Commands,
     query: Query<Entity, With<PausedMenu>>,
-    asset_server: Res<AssetServer>,
+    ui_assets: Res<UiAssets>,
 ) {
     if let Ok(entity) = query.get_single() {
         commands.entity(entity).despawn_recursive();
-        let sound_effect = asset_server.load("audio/confirmation_002.ogg");
         commands.spawn(AudioBundle {
-            source: sound_effect,
+            source: ui_assets.resume_game_sound.clone(),
             settings: PlaybackSettings::ONCE,
         });
     }
@@ -208,14 +211,13 @@ pub fn resume_game_button_action(
     mut button_query: Query<&Interaction, (Changed<Interaction>, With<ResumeGameButton>)>,
     mut app_state_next_state: ResMut<NextState<AppState>>,
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
+    ui_assets: Res<UiAssets>,
 ) {
     if let Ok(interaction) = button_query.get_single_mut() {
         if *interaction == Interaction::Pressed {
             app_state_next_state.set(AppState::Playing);
-            let sound_effect = asset_server.load("audio/confirmation_002.ogg");
             commands.spawn(AudioBundle {
-                source: sound_effect,
+                source: ui_assets.resume_game_sound.clone(),
                 settings: PlaybackSettings::ONCE,
             });
         }

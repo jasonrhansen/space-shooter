@@ -1,8 +1,9 @@
 pub mod components;
 pub mod events;
+pub mod resources;
 pub mod systems;
 
-use self::events::SpawnLaser;
+use self::{events::SpawnLaser, resources::LaserAssets};
 use crate::{AppState, UpdateSet};
 use bevy::prelude::*;
 use systems::*;
@@ -14,7 +15,9 @@ pub struct LaserPlugin;
 
 impl Plugin for LaserPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<SpawnLaser>()
+        app.init_resource::<LaserAssets>()
+            .add_event::<SpawnLaser>()
+            .add_systems(Startup, load_laser_assets)
             .add_systems(
                 Update,
                 (

@@ -1,5 +1,5 @@
 use super::events::{PlayerDeath, PlayerThrusterChanged};
-use super::resources::PlayerCollisionConvexShapes;
+use super::resources::{PlayerAssets, PlayerCollisionConvexShapes};
 use super::{components::*, PLAYER_ACCELERATION, PLAYER_MAX_SPEED, PLAYER_SIZE};
 use crate::asteroid::components::Asteroid;
 use crate::health::Health;
@@ -10,10 +10,17 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use std::f32::consts::PI;
 
+pub fn load_player_assets(asset_server: Res<AssetServer>, mut player_assets: ResMut<PlayerAssets>) {
+    player_assets.ship_texture = asset_server.load("images/sprites/playerShip1_red.png");
+    player_assets.fire_texture = asset_server.load("images/sprites/fire13.png");
+    player_assets.explosion_sound = asset_server.load("audio/explosionCrunch_000.ogg");
+    player_assets.star_sound = asset_server.load("audio/laserLarge_000.ogg");
+}
+
 pub fn new_game_spawn_player(
     mut new_game_reader: EventReader<NewGame>,
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
+    player_assets: Res<PlayerAssets>,
     collision_shapes: Res<PlayerCollisionConvexShapes>,
     player_query: Query<Entity, With<Player>>,
 ) {
@@ -37,7 +44,7 @@ pub fn new_game_spawn_player(
             health: Health { percent: 10 },
             sprite_bundle: SpriteBundle {
                 transform: Transform::from_xyz(VIEWPORT_WIDTH / 2.0, VIEWPORT_HEIGHT / 2.0, 0.0),
-                texture: asset_server.load("images/sprites/playerShip1_red.png"),
+                texture: player_assets.ship_texture.clone(),
                 ..default()
             },
             player_collision_bundle: PlayerCollisionBundle {
@@ -65,27 +72,27 @@ pub fn new_game_spawn_player(
         .with_children(|parent| {
             parent.spawn(ForwardThruster).insert(SpriteBundle {
                 transform: Transform::from_xyz(-20.0, -PLAYER_SIZE / 2.0 - 10.0, 0.0),
-                texture: asset_server.load("images/sprites/fire13.png"),
+                texture: player_assets.fire_texture.clone(),
                 visibility: Visibility::Hidden,
                 ..default()
             });
             parent.spawn(ForwardThruster).insert(SpriteBundle {
                 transform: Transform::from_xyz(20.0, -PLAYER_SIZE / 2.0 - 10.0, 0.0),
-                texture: asset_server.load("images/sprites/fire13.png"),
+                texture: player_assets.fire_texture.clone(),
                 visibility: Visibility::Hidden,
                 ..default()
             });
             parent.spawn(BackwardThruster).insert(SpriteBundle {
                 transform: Transform::from_xyz(-30.0, 20.0, 0.0)
                     .with_rotation(Quat::from_rotation_z(PI)),
-                texture: asset_server.load("images/sprites/fire13.png"),
+                texture: player_assets.fire_texture.clone(),
                 visibility: Visibility::Hidden,
                 ..default()
             });
             parent.spawn(BackwardThruster).insert(SpriteBundle {
                 transform: Transform::from_xyz(30.0, 20.0, 0.0)
                     .with_rotation(Quat::from_rotation_z(PI)),
-                texture: asset_server.load("images/sprites/fire13.png"),
+                texture: player_assets.fire_texture.clone(),
                 visibility: Visibility::Hidden,
                 ..default()
             });
@@ -203,7 +210,7 @@ pub fn player_hit_asteroid(
 }
 
 pub fn player_death(
-    asset_server: Res<AssetServer>,
+    player_assets: Res<PlayerAssets>,
     mut commands: Commands,
     mut player_died_reader: EventReader<PlayerDeath>,
     mut game_over_writer: EventWriter<GameOver>,
@@ -211,9 +218,8 @@ pub fn player_death(
 ) {
     if player_died_reader.read().next().is_some() {
         for entity in player_query.iter() {
-            let sound_effect = asset_server.load("audio/explosionCrunch_000.ogg");
             commands.spawn(AudioBundle {
-                source: sound_effect,
+                source: player_assets.explosion_sound.clone(),
                 settings: PlaybackSettings::ONCE,
             });
             commands.entity(entity).despawn_recursive();
@@ -238,19 +244,18 @@ pub fn player_damage_timer(
 }
 
 pub fn player_hit_star(
+    player_assets: Res<PlayerAssets>,
     mut commands: Commands,
     player_colliding_entities: Query<&CollidingEntities, With<Player>>,
     stars: Query<Entity, With<Star>>,
-    asset_server: Res<AssetServer>,
     mut score: ResMut<Score>,
 ) {
     if let Ok(colliding_entities) = player_colliding_entities.get_single() {
         for star_entity in stars.iter() {
             if colliding_entities.contains(star_entity) {
                 score.value += 1;
-                let sound_effect = asset_server.load("audio/laserLarge_000.ogg");
                 commands.spawn(AudioBundle {
-                    source: sound_effect,
+                    source: player_assets.star_sound.clone(),
                     settings: PlaybackSettings::ONCE,
                 });
                 commands.entity(star_entity).despawn();
