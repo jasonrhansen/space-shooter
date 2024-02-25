@@ -176,6 +176,7 @@ pub fn player_hit_asteroid(
     mut game_over_writer: EventWriter<GameOver>,
     mut player_query: Query<(Entity, &mut Player, &CollidingEntities, &mut Health)>,
     asteroid_query: Query<Entity, With<Asteroid>>,
+    asset_server: Res<AssetServer>,
 ) {
     if let Ok((player_entity, mut player, colliding_entities, mut player_health)) =
         player_query.get_single_mut()
@@ -194,6 +195,11 @@ pub fn player_hit_asteroid(
                     .insert(DamageTime(Timer::from_seconds(1.0, TimerMode::Once)));
 
                 if player_health.percent == 0 {
+                    let sound_effect = asset_server.load("audio/explosionCrunch_000.ogg");
+                    commands.spawn(AudioBundle {
+                        source: sound_effect,
+                        settings: PlaybackSettings::ONCE,
+                    });
                     commands.entity(player_entity).despawn_recursive();
                     game_over_writer.send(GameOver);
                 }
