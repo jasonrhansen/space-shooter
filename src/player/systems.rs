@@ -17,6 +17,7 @@ pub fn load_player_assets(asset_server: Res<AssetServer>, mut player_assets: Res
     player_assets.explosion_texture = asset_server.load("images/sprites/explosion.png");
     player_assets.explosion_sound = asset_server.load("audio/explosionCrunch_000.ogg");
     player_assets.star_sound = asset_server.load("audio/laserLarge_000.ogg");
+    player_assets.thruster_sound = asset_server.load("audio/thrusterFire_000.ogg");
 }
 
 pub fn new_game_spawn_player(
@@ -26,6 +27,7 @@ pub fn new_game_spawn_player(
     collision_shapes: Res<PlayerCollisionConvexShapes>,
     player_query: Query<Entity, With<Player>>,
     mut next_player_state: ResMut<NextState<PlayerState>>,
+    audio: Res<Audio>,
 ) {
     if new_game_reader.read().next().is_none() {
         return;
@@ -73,6 +75,13 @@ pub fn new_game_spawn_player(
                 active_events: ActiveEvents::COLLISION_EVENTS | ActiveEvents::CONTACT_FORCE_EVENTS,
                 colliding_entities: CollidingEntities::default(),
             },
+            thruster_sound: ThrusterSound(
+                audio
+                    .play(player_assets.thruster_sound.clone())
+                    .paused()
+                    .looped()
+                    .handle(),
+            ),
         })
         .with_children(|parent| {
             parent.spawn(ForwardThruster).insert(SpriteBundle {
@@ -218,8 +227,11 @@ pub fn player_death(
     mut commands: Commands,
     player_query: Query<Entity, With<Player>>,
     audio: Res<Audio>,
+    mut thruster_writer: EventWriter<PlayerThrusterChanged>,
 ) {
     for player_entity in player_query.iter() {
+        thruster_writer.send(PlayerThrusterChanged::None);
+
         audio.play(player_assets.explosion_sound.clone());
 
         commands.entity(player_entity).insert(Visibility::Hidden);
@@ -280,7 +292,7 @@ pub fn player_hit_star(
     }
 }
 
-pub fn forward_thruster_visibility(
+pub fn thruster_visibility(
     mut commands: Commands,
     mut thrust_changed_events: EventReader<PlayerThrusterChanged>,
     player_children_query: Query<&Children, With<Player>>,
@@ -312,6 +324,27 @@ pub fn forward_thruster_visibility(
                         if backward_thruster_query.contains(child) {
                             commands.entity(child).insert(Visibility::Hidden);
                         }
+                    }
+                }
+            }
+        }
+    }
+}
+
+pub fn thruster_sound(
+    mut thrust_changed_events: EventReader<PlayerThrusterChanged>,
+    mut audio_instances: ResMut<Assets<AudioInstance>>,
+    thruster_sound: Query<&ThrusterSound, With<Player>>,
+) {
+    if let Ok(thruster_handle) = thruster_sound.get_single() {
+        if let Some(instance) = audio_instances.get_mut(&thruster_handle.0) {
+            if let Some(event) = thrust_changed_events.read().last() {
+                match event {
+                    PlayerThrusterChanged::Forward | PlayerThrusterChanged::Backward => {
+                        instance.resume(AudioTween::default());
+                    }
+                    PlayerThrusterChanged::None => {
+                        instance.stop(AudioTween::default());
                     }
                 }
             }

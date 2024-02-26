@@ -9,6 +9,7 @@ pub struct PlayerAssets {
     pub explosion_texture: Handle<Image>,
     pub explosion_sound: Handle<AudioSource>,
     pub star_sound: Handle<AudioSource>,
+    pub thruster_sound: Handle<AudioSource>,
 }
 
 #[derive(Resource)]

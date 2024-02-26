@@ -44,12 +44,13 @@ impl Plugin for PlayerPlugin {
                         (player_hit_asteroid, player_hit_star)
                             .in_set(UpdateSet::Collision)
                             .after(UpdateSet::Movement),
-                        forward_thruster_visibility,
+                        thruster_visibility,
                         player_damage_timer,
                     )
                         .run_if(in_state(PlayerState::Alive)),
                     (player_death_timer, animate_player_explosion)
                         .run_if(in_state(PlayerState::Dead)),
+                    thruster_sound,
                 )
                     .run_if(in_state(AppState::Playing)),
             )

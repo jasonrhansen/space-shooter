@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_kira_audio::AudioInstance;
 use bevy_rapier2d::{
     dynamics::RigidBody,
     geometry::{ActiveEvents, Collider, CollidingEntities, CollisionGroups},
@@ -31,6 +32,7 @@ pub struct PlayerBundle {
     pub health: Health,
     pub sprite_bundle: SpriteBundle,
     pub player_collision_bundle: PlayerCollisionBundle,
+    pub thruster_sound: ThrusterSound,
 }
 
 #[derive(Bundle)]
@@ -61,3 +63,6 @@ pub struct PlayerExplosionBundle {
     pub animation_indices: AnimationIndices,
     pub animation_timer: AnimationTimer,
 }
+
+#[derive(Component, Deref, DerefMut)]
+pub struct ThrusterSound(pub Handle<AudioInstance>);
