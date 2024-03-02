@@ -33,6 +33,7 @@ pub struct PlayerBundle {
     pub sprite_bundle: SpriteBundle,
     pub player_collision_bundle: PlayerCollisionBundle,
     pub thruster_sound: ThrusterSound,
+    pub name: Name,
 }
 
 #[derive(Bundle)]

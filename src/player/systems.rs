@@ -43,6 +43,7 @@ pub fn new_game_spawn_player(
 
     commands
         .spawn(PlayerBundle {
+            name: Name::new("Player"),
             player: Player {
                 direction: Vec2::new(0.0, 1.0),
                 velocity: Vec2::ZERO,

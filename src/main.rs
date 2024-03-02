@@ -2,8 +2,10 @@
 
 use crate::app_state::AppState;
 use asteroid::AsteroidPlugin;
+use bevy::input::common_conditions::input_toggle_active;
 use bevy::window::PresentMode;
 use bevy::{app::AppExit, prelude::*};
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_kira_audio::AudioPlugin;
 use bevy_rapier2d::prelude::*;
 use bevy_rapier2d::{prelude::RapierConfiguration, render::DebugRenderContext};
@@ -51,6 +53,7 @@ fn main() {
             AudioPlugin,
             RapierPhysicsPlugin::<NoUserData>::default(),
             RapierDebugRenderPlugin::default().disabled(),
+            WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::F2)),
         ))
         .init_state::<AppState>()
         .add_event::<GameOver>()
@@ -134,7 +137,7 @@ pub fn toggle_debug_render(
     mut debug_context: ResMut<DebugRenderContext>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
 ) {
-    if keyboard_input.just_pressed(KeyCode::F2) {
+    if keyboard_input.just_pressed(KeyCode::F3) {
         debug_context.enabled = !debug_context.enabled;
     }
 }
