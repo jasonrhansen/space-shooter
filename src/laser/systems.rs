@@ -10,11 +10,6 @@ use bevy_kira_audio::prelude::*;
 use bevy_rapier2d::prelude::*;
 use std::f32::consts::PI;
 
-pub fn load_laser_assets(asset_server: Res<AssetServer>, mut player_assets: ResMut<LaserAssets>) {
-    player_assets.laser_texture = asset_server.load("images/sprites/laserRed01.png");
-    player_assets.laser_sound = asset_server.load("audio/sfx_laser1.ogg");
-}
-
 pub fn spawn_lasers(
     mut commands: Commands,
     mut event_reader: EventReader<SpawnLaser>,
