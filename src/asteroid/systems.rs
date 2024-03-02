@@ -1,4 +1,5 @@
 use super::components::*;
+use super::resources::AsteroidAssets;
 use super::resources::AsteroidCollisionConvexShapes;
 use super::ASTEROID_SIZE;
 use super::ASTEROID_SPEED;
@@ -14,8 +15,8 @@ use std::f32::consts::PI;
 pub fn new_game_spawn_asteroids(
     mut commands: Commands,
     asteroids_query: Query<Entity, With<Asteroid>>,
-    asset_server: Res<AssetServer>,
     collision_shapes: Res<AsteroidCollisionConvexShapes>,
+    asteroid_assets: Res<AsteroidAssets>,
 ) {
     for entity in asteroids_query.iter() {
         commands.entity(entity).despawn();
@@ -24,51 +25,55 @@ pub fn new_game_spawn_asteroids(
     let viewport_center = Vec2::new(VIEWPORT_WIDTH / 2.0, VIEWPORT_HEIGHT / 2.0);
     let asteroid_shapes = &collision_shapes.asteroid_shapes;
 
-    for i in 0..NUM_ASTEROIDS {
-        for color in ["Grey", "Brown"] {
-            let position = {
-                let random_position = Vec2::new(
-                    random::<f32>() * VIEWPORT_WIDTH,
-                    random::<f32>() * VIEWPORT_HEIGHT,
-                );
-                // Make sure the asteroid doesn't spawn too close to the player.
-                if random_position.distance(viewport_center) < PLAYER_SAFE_RADIUS {
-                    (random_position - viewport_center).normalize() * PLAYER_SAFE_RADIUS
-                } else {
-                    random_position
-                }
-            };
+    let asteroid_images = [
+        &asteroid_assets.grey_1_texture,
+        &asteroid_assets.grey_2_texture,
+        &asteroid_assets.grey_3_texture,
+        &asteroid_assets.grey_4_texture,
+        &asteroid_assets.brown_1_texture,
+        &asteroid_assets.brown_2_texture,
+        &asteroid_assets.brown_3_texture,
+        &asteroid_assets.brown_4_texture,
+    ];
 
-            commands
-                .spawn(Asteroid)
-                .insert(SpriteBundle {
-                    transform: Transform::from_translation(position.extend(0.0)),
-                    texture: asset_server.load(format!(
-                        "images/sprites/meteor{}_big{}.png",
-                        color,
-                        i + 1
-                    )),
-                    ..default()
-                })
-                .insert(RigidBody::Dynamic)
-                .insert(Velocity {
-                    linvel: Vec2::new(random::<f32>(), random::<f32>()).normalize()
-                        * ASTEROID_SPEED,
-                    angvel: random::<f32>() * PI - PI,
-                })
-                .insert(Collider::compound(
-                    asteroid_shapes[i]
-                        .iter()
-                        .map(|vertices| {
-                            (
-                                Vec2::ZERO,
-                                0.0,
-                                Collider::convex_hull(vertices.as_ref()).unwrap(),
-                            )
-                        })
-                        .collect(),
-                ));
-        }
+    for (i, &image) in asteroid_images.iter().enumerate() {
+        let position = {
+            let random_position = Vec2::new(
+                random::<f32>() * VIEWPORT_WIDTH,
+                random::<f32>() * VIEWPORT_HEIGHT,
+            );
+            // Make sure the asteroid doesn't spawn too close to the player.
+            if random_position.distance(viewport_center) < PLAYER_SAFE_RADIUS {
+                (random_position - viewport_center).normalize() * PLAYER_SAFE_RADIUS
+            } else {
+                random_position
+            }
+        };
+
+        commands
+            .spawn(Asteroid)
+            .insert(SpriteBundle {
+                transform: Transform::from_translation(position.extend(0.0)),
+                texture: (*image).clone(),
+                ..default()
+            })
+            .insert(RigidBody::Dynamic)
+            .insert(Velocity {
+                linvel: Vec2::new(random::<f32>(), random::<f32>()).normalize() * ASTEROID_SPEED,
+                angvel: random::<f32>() * PI - PI,
+            })
+            .insert(Collider::compound(
+                asteroid_shapes[i % NUM_ASTEROIDS]
+                    .iter()
+                    .map(|vertices| {
+                        (
+                            Vec2::ZERO,
+                            0.0,
+                            Collider::convex_hull(vertices.as_ref()).unwrap(),
+                        )
+                    })
+                    .collect(),
+            ));
     }
 }
 

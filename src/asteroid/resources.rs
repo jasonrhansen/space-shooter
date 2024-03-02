@@ -1,5 +1,26 @@
 use crate::ConvexShape;
 use bevy::prelude::*;
+use bevy_asset_loader::prelude::*;
+
+#[derive(AssetCollection, Resource)]
+pub struct AsteroidAssets {
+    #[asset(path = "images/sprites/meteorGrey_big1.png")]
+    pub grey_1_texture: Handle<Image>,
+    #[asset(path = "images/sprites/meteorGrey_big2.png")]
+    pub grey_2_texture: Handle<Image>,
+    #[asset(path = "images/sprites/meteorGrey_big3.png")]
+    pub grey_3_texture: Handle<Image>,
+    #[asset(path = "images/sprites/meteorGrey_big4.png")]
+    pub grey_4_texture: Handle<Image>,
+    #[asset(path = "images/sprites/meteorBrown_big1.png")]
+    pub brown_1_texture: Handle<Image>,
+    #[asset(path = "images/sprites/meteorBrown_big2.png")]
+    pub brown_2_texture: Handle<Image>,
+    #[asset(path = "images/sprites/meteorBrown_big3.png")]
+    pub brown_3_texture: Handle<Image>,
+    #[asset(path = "images/sprites/meteorBrown_big4.png")]
+    pub brown_4_texture: Handle<Image>,
+}
 
 #[derive(Resource)]
 pub struct AsteroidCollisionConvexShapes {

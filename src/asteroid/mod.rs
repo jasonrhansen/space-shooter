@@ -2,8 +2,10 @@ pub mod components;
 pub mod resources;
 pub mod systems;
 
+use self::resources::AsteroidAssets;
 use crate::{state::GameState, AppState, UpdateSet};
 use bevy::prelude::*;
+use bevy_asset_loader::prelude::*;
 use systems::*;
 
 pub const NUM_ASTEROIDS: usize = 4;
@@ -18,6 +20,9 @@ pub struct AsteroidPlugin;
 impl Plugin for AsteroidPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<resources::AsteroidCollisionConvexShapes>()
+            .configure_loading_state(
+                LoadingStateConfig::new(AppState::Loading).load_collection::<AsteroidAssets>(),
+            )
             .add_systems(
                 OnEnter(AppState::Running),
                 new_game_spawn_asteroids.in_set(UpdateSet::Init),
