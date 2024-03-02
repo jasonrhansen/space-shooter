@@ -3,7 +3,7 @@ use super::resources::{PlayerAssets, PlayerCollisionConvexShapes};
 use super::{components::*, PlayerState, PLAYER_ACCELERATION, PLAYER_MAX_SPEED, PLAYER_SIZE};
 use crate::asteroid::components::Asteroid;
 use crate::health::Health;
-use crate::{collision_groups::*, GameOver, NewGame};
+use crate::{collision_groups::*, GameOver};
 use crate::{laser::events::SpawnLaser, score::resources::Score, star::components::Star};
 use crate::{VIEWPORT_HEIGHT, VIEWPORT_WIDTH};
 use bevy::prelude::*;
@@ -11,17 +11,7 @@ use bevy_kira_audio::prelude::*;
 use bevy_rapier2d::prelude::*;
 use std::f32::consts::PI;
 
-pub fn load_player_assets(asset_server: Res<AssetServer>, mut player_assets: ResMut<PlayerAssets>) {
-    player_assets.ship_texture = asset_server.load("images/sprites/playerShip1_red.png");
-    player_assets.fire_texture = asset_server.load("images/sprites/fire13.png");
-    player_assets.explosion_texture = asset_server.load("images/sprites/explosion.png");
-    player_assets.explosion_sound = asset_server.load("audio/explosionCrunch_000.ogg");
-    player_assets.star_sound = asset_server.load("audio/laserLarge_000.ogg");
-    player_assets.thruster_sound = asset_server.load("audio/thrusterFire_000.ogg");
-}
-
 pub fn new_game_spawn_player(
-    mut new_game_reader: EventReader<NewGame>,
     mut commands: Commands,
     player_assets: Res<PlayerAssets>,
     collision_shapes: Res<PlayerCollisionConvexShapes>,
@@ -29,10 +19,6 @@ pub fn new_game_spawn_player(
     mut next_player_state: ResMut<NextState<PlayerState>>,
     audio: Res<Audio>,
 ) {
-    if new_game_reader.read().next().is_none() {
-        return;
-    }
-
     next_player_state.set(PlayerState::Alive);
 
     for entity in player_query.iter() {

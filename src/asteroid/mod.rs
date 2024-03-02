@@ -2,7 +2,7 @@ pub mod components;
 pub mod resources;
 pub mod systems;
 
-use crate::{AppState, UpdateSet};
+use crate::{state::GameState, AppState, UpdateSet};
 use bevy::prelude::*;
 use systems::*;
 
@@ -19,12 +19,13 @@ impl Plugin for AsteroidPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<resources::AsteroidCollisionConvexShapes>()
             .add_systems(
+                OnEnter(AppState::Running),
+                new_game_spawn_asteroids.in_set(UpdateSet::Init),
+            )
+            .add_systems(
                 Update,
-                (
-                    new_game_spawn_asteroids.in_set(UpdateSet::Init),
-                    wrap_asteroid_movement.in_set(UpdateSet::Movement),
-                )
-                    .run_if(in_state(AppState::Playing)),
+                (wrap_asteroid_movement.in_set(UpdateSet::Movement),)
+                    .run_if(in_state(AppState::Running).and_then(in_state(GameState::Playing))),
             );
     }
 }

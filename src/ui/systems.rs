@@ -1,8 +1,6 @@
 use super::*;
 use super::{components::*, resources::UiAssets};
-use crate::{
-    health::Health, player::components::Player, score::resources::Score, AppState, NewGame,
-};
+use crate::{health::Health, player::components::Player, score::resources::Score};
 use bevy::app::AppExit;
 use bevy_kira_audio::prelude::*;
 
@@ -204,13 +202,13 @@ pub fn button_interaction_color(
 
 pub fn resume_game_button_action(
     mut button_query: Query<&Interaction, (Changed<Interaction>, With<ResumeGameButton>)>,
-    mut app_state_next_state: ResMut<NextState<AppState>>,
+    mut next_game_state: ResMut<NextState<GameState>>,
     ui_assets: Res<UiAssets>,
     audio: Res<Audio>,
 ) {
     if let Ok(interaction) = button_query.get_single_mut() {
         if *interaction == Interaction::Pressed {
-            app_state_next_state.set(AppState::Playing);
+            next_game_state.set(GameState::Playing);
             audio.play(ui_assets.resume_game_sound.clone());
         }
     }
@@ -218,13 +216,13 @@ pub fn resume_game_button_action(
 
 pub fn new_game_button_action(
     mut button_query: Query<&Interaction, (Changed<Interaction>, With<NewGameButton>)>,
-    mut app_state_next_state: ResMut<NextState<AppState>>,
-    mut new_game_event: EventWriter<NewGame>,
+    mut next_app_state: ResMut<NextState<AppState>>,
+    mut next_game_state: ResMut<NextState<GameState>>,
 ) {
     if let Ok(interaction) = button_query.get_single_mut() {
         if *interaction == Interaction::Pressed {
-            app_state_next_state.set(AppState::Playing);
-            new_game_event.send(NewGame);
+            next_app_state.set(AppState::Loading);
+            next_game_state.set(GameState::Playing);
         }
     }
 }

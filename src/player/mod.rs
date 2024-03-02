@@ -7,8 +7,9 @@ use self::{
     events::PlayerThrusterChanged,
     resources::{PlayerAssets, PlayerCollisionConvexShapes},
 };
-use crate::{AppState, UpdateSet};
+use crate::{state::GameState, AppState, UpdateSet};
 use bevy::prelude::*;
+use bevy_asset_loader::prelude::*;
 use systems::*;
 
 pub const PLAYER_SIZE: f32 = 75.0;
@@ -28,13 +29,17 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.init_state::<PlayerState>()
             .init_resource::<PlayerCollisionConvexShapes>()
-            .init_resource::<PlayerAssets>()
+            .configure_loading_state(
+                LoadingStateConfig::new(AppState::Loading).load_collection::<PlayerAssets>(),
+            )
             .add_event::<PlayerThrusterChanged>()
-            .add_systems(Startup, load_player_assets)
+            .add_systems(
+                OnEnter(AppState::Running),
+                new_game_spawn_player.in_set(UpdateSet::Init),
+            )
             .add_systems(
                 Update,
                 (
-                    new_game_spawn_player.in_set(UpdateSet::Init),
                     (
                         player_input.in_set(UpdateSet::Input).after(UpdateSet::Init),
                         (player_movement, wrap_player_movement)
@@ -52,7 +57,7 @@ impl Plugin for PlayerPlugin {
                         .run_if(in_state(PlayerState::Dead)),
                     thruster_sound,
                 )
-                    .run_if(in_state(AppState::Playing)),
+                    .run_if(in_state(AppState::Running).and_then(in_state(GameState::Playing))),
             )
             .add_systems(
                 OnEnter(PlayerState::Dead),

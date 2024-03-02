@@ -1,16 +1,17 @@
 #![allow(clippy::type_complexity)]
 
-use crate::app_state::AppState;
+use crate::state::AppState;
 use asteroid::AsteroidPlugin;
+use bevy::app::AppExit;
 use bevy::input::common_conditions::input_toggle_active;
+use bevy::prelude::*;
 use bevy::window::PresentMode;
-use bevy::{app::AppExit, prelude::*};
+use bevy_asset_loader::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_kira_audio::AudioPlugin;
 use bevy_rapier2d::prelude::*;
 use bevy_rapier2d::{prelude::RapierConfiguration, render::DebugRenderContext};
 
-pub mod app_state;
 pub mod asteroid;
 pub mod background;
 pub mod camera;
@@ -21,6 +22,7 @@ pub mod music;
 pub mod player;
 pub mod score;
 pub mod star;
+pub mod state;
 pub mod ui;
 
 use background::spawn_background;
@@ -31,6 +33,7 @@ use music::spawn_music;
 use player::PlayerPlugin;
 use score::ScorePlugin;
 use star::StarPlugin;
+use state::GameState;
 use ui::UiPlugin;
 
 pub const VIEWPORT_WIDTH: f32 = 1280.0;
@@ -57,18 +60,15 @@ fn main() {
             WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::F2)),
         ))
         .init_state::<AppState>()
+        .init_state::<GameState>()
+        .add_loading_state(
+            LoadingState::new(AppState::Loading).continue_to_state(AppState::Running),
+        )
         .register_type::<Health>()
         .add_event::<GameOver>()
-        .add_event::<NewGame>()
         .add_systems(
             Startup,
-            (
-                setup_physics,
-                spawn_camera,
-                spawn_background,
-                spawn_music,
-                new_game,
-            ),
+            (setup_physics, spawn_camera, spawn_background, spawn_music),
         )
         .add_plugins((
             AsteroidPlugin,
@@ -81,9 +81,10 @@ fn main() {
         .add_systems(
             Update,
             (
-                handle_physics_active.run_if(state_changed::<AppState>),
+                handle_physics_active
+                    .run_if(state_changed::<AppState>.or_else(state_changed::<GameState>)),
                 exit_game,
-                update_paused_state,
+                update_paused_state.run_if(in_state(AppState::Running)),
                 toggle_debug_render,
             ),
         )
@@ -110,15 +111,15 @@ pub fn handle_game_over(
 }
 
 pub fn update_paused_state(
-    app_state: ResMut<State<AppState>>,
-    mut next_app_state: ResMut<NextState<AppState>>,
+    game_state: ResMut<State<GameState>>,
+    mut next_game_state: ResMut<NextState<GameState>>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Enter) {
-        if app_state.as_ref() == &AppState::Paused {
-            next_app_state.set(AppState::Playing);
-        } else if app_state.as_ref() == &AppState::Playing {
-            next_app_state.set(AppState::Paused);
+        if game_state.as_ref() == &GameState::Paused {
+            next_game_state.set(GameState::Playing);
+        } else if game_state.as_ref() == &GameState::Playing {
+            next_game_state.set(GameState::Paused);
         }
     }
 }
@@ -130,9 +131,11 @@ pub fn setup_physics(mut rapier_config: ResMut<RapierConfiguration>) {
 
 pub fn handle_physics_active(
     app_state: Res<State<AppState>>,
+    game_state: Res<State<GameState>>,
     mut rapier_config: ResMut<RapierConfiguration>,
 ) {
-    rapier_config.physics_pipeline_active = app_state.as_ref() == &AppState::Playing;
+    rapier_config.physics_pipeline_active =
+        app_state.as_ref() == &AppState::Running && game_state.as_ref() == &GameState::Playing;
 }
 
 pub fn toggle_debug_render(
@@ -142,13 +145,6 @@ pub fn toggle_debug_render(
     if keyboard_input.just_pressed(KeyCode::F3) {
         debug_context.enabled = !debug_context.enabled;
     }
-}
-
-#[derive(Event)]
-pub struct NewGame;
-
-pub fn new_game(mut new_game_event: EventWriter<NewGame>) {
-    new_game_event.send(NewGame);
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, SystemSet)]

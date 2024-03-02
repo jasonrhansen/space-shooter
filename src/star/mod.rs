@@ -2,7 +2,7 @@ pub mod components;
 pub mod resources;
 pub mod systems;
 
-use crate::{AppState, UpdateSet};
+use crate::{state::GameState, AppState, UpdateSet};
 use bevy::prelude::*;
 use resources::*;
 use systems::*;
@@ -19,13 +19,13 @@ impl Plugin for StarPlugin {
             .init_resource::<StarAssets>()
             .add_systems(Startup, load_star_assets)
             .add_systems(
+                OnEnter(AppState::Running),
+                new_game_spawn_stars.in_set(UpdateSet::Init),
+            )
+            .add_systems(
                 Update,
-                (
-                    new_game_spawn_stars.in_set(UpdateSet::Init),
-                    tick_star_spawn_timer,
-                    spawn_stars_over_time,
-                )
-                    .run_if(in_state(AppState::Playing)),
+                (tick_star_spawn_timer, spawn_stars_over_time)
+                    .run_if(in_state(AppState::Running).and_then(in_state(GameState::Playing))),
             );
     }
 }

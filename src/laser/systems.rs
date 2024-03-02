@@ -3,7 +3,7 @@ use super::events::SpawnLaser;
 use super::resources::LaserAssets;
 use super::LASER_SPEED;
 use crate::asteroid::components::Asteroid;
-use crate::{collision_groups::*, NewGame};
+use crate::collision_groups::*;
 use crate::{VIEWPORT_HEIGHT, VIEWPORT_WIDTH};
 use bevy::prelude::*;
 use bevy_kira_audio::prelude::*;
@@ -49,15 +49,7 @@ pub fn spawn_lasers(
     });
 }
 
-pub fn new_game_despawn_lasers(
-    mut new_game_reader: EventReader<NewGame>,
-    mut commands: Commands,
-    lasers_query: Query<Entity, With<Laser>>,
-) {
-    if new_game_reader.read().next().is_none() {
-        return;
-    }
-
+pub fn new_game_despawn_lasers(mut commands: Commands, lasers_query: Query<Entity, With<Laser>>) {
     for entity in lasers_query.iter() {
         commands.entity(entity).despawn();
     }

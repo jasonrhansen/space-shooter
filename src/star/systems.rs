@@ -2,7 +2,6 @@ use super::components::*;
 use super::resources::*;
 use super::*;
 use crate::collision_groups::*;
-use crate::NewGame;
 use crate::VIEWPORT_HEIGHT;
 use crate::VIEWPORT_WIDTH;
 use bevy_rapier2d::prelude::*;
@@ -13,15 +12,10 @@ pub fn load_star_assets(asset_server: Res<AssetServer>, mut player_assets: ResMu
 }
 
 pub fn new_game_spawn_stars(
-    mut new_game_reader: EventReader<NewGame>,
     mut commands: Commands,
     star_assets: Res<StarAssets>,
     stars_query: Query<Entity, With<Star>>,
 ) {
-    if new_game_reader.read().next().is_none() {
-        return;
-    }
-
     for entity in stars_query.iter() {
         commands.entity(entity).despawn();
     }

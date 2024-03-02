@@ -1,14 +1,21 @@
 use crate::ConvexShape;
 use bevy::prelude::*;
+use bevy_asset_loader::prelude::*;
 use bevy_kira_audio::AudioSource;
 
-#[derive(Resource, Default)]
+#[derive(AssetCollection, Resource)]
 pub struct PlayerAssets {
+    #[asset(path = "images/sprites/playerShip1_red.png")]
     pub ship_texture: Handle<Image>,
+    #[asset(path = "images/sprites/fire13.png")]
     pub fire_texture: Handle<Image>,
+    #[asset(path = "images/sprites/explosion.png")]
     pub explosion_texture: Handle<Image>,
+    #[asset(path = "audio/explosionCrunch_000.ogg")]
     pub explosion_sound: Handle<AudioSource>,
+    #[asset(path = "audio/laserLarge_000.ogg")]
     pub star_sound: Handle<AudioSource>,
+    #[asset(path = "audio/thrusterFire_000.ogg")]
     pub thruster_sound: Handle<AudioSource>,
 }
 
