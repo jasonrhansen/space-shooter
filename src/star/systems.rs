@@ -1,15 +1,10 @@
-use super::components::*;
-use super::resources::*;
+use super::components::Star;
 use super::*;
 use crate::collision_groups::*;
 use crate::VIEWPORT_HEIGHT;
 use crate::VIEWPORT_WIDTH;
 use bevy_rapier2d::prelude::*;
 use rand::prelude::*;
-
-pub fn load_star_assets(asset_server: Res<AssetServer>, mut player_assets: ResMut<StarAssets>) {
-    player_assets.star_texture = asset_server.load("images/sprites/star_gold.png");
-}
 
 pub fn new_game_spawn_stars(
     mut commands: Commands,

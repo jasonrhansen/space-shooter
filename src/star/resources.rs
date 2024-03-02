@@ -1,8 +1,10 @@
 use super::STAR_SPAWN_TIME;
 use bevy::prelude::*;
+use bevy_asset_loader::prelude::*;
 
-#[derive(Resource, Default)]
+#[derive(AssetCollection, Resource)]
 pub struct StarAssets {
+    #[asset(path = "images/sprites/star_gold.png")]
     pub star_texture: Handle<Image>,
 }
 

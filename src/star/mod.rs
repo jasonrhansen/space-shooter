@@ -4,6 +4,7 @@ pub mod systems;
 
 use crate::{state::GameState, AppState, UpdateSet};
 use bevy::prelude::*;
+use bevy_asset_loader::prelude::*;
 use resources::*;
 use systems::*;
 
@@ -16,8 +17,9 @@ pub struct StarPlugin;
 impl Plugin for StarPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<StarSpawnTimer>()
-            .init_resource::<StarAssets>()
-            .add_systems(Startup, load_star_assets)
+            .configure_loading_state(
+                LoadingStateConfig::new(AppState::Loading).load_collection::<StarAssets>(),
+            )
             .add_systems(
                 OnEnter(AppState::Running),
                 new_game_spawn_stars.in_set(UpdateSet::Init),
