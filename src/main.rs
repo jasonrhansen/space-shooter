@@ -25,6 +25,7 @@ pub mod ui;
 
 use background::spawn_background;
 use camera::spawn_camera;
+use health::Health;
 use laser::LaserPlugin;
 use music::spawn_music;
 use player::PlayerPlugin;
@@ -56,6 +57,7 @@ fn main() {
             WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::F2)),
         ))
         .init_state::<AppState>()
+        .register_type::<Health>()
         .add_event::<GameOver>()
         .add_event::<NewGame>()
         .add_systems(

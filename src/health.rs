@@ -1,7 +1,10 @@
 use bevy::prelude::*;
+use bevy_inspector_egui::prelude::*;
 
-#[derive(Component, Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Component, Copy, Clone, Debug, PartialEq, Eq, Reflect, Default, InspectorOptions)]
+#[reflect(InspectorOptions)]
 pub struct Health {
+    #[inspector(min = 0, max = 100)]
     pub percent: u8,
 }
 
