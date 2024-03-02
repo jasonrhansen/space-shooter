@@ -25,11 +25,11 @@ pub mod star;
 pub mod state;
 pub mod ui;
 
-use background::spawn_background;
+use background::{spawn_background, BackgroundAssets};
 use camera::spawn_camera;
 use health::Health;
 use laser::LaserPlugin;
-use music::spawn_music;
+use music::{spawn_music, MusicAssets};
 use player::PlayerPlugin;
 use score::ScorePlugin;
 use star::StarPlugin;
@@ -62,14 +62,15 @@ fn main() {
         .init_state::<AppState>()
         .init_state::<GameState>()
         .add_loading_state(
-            LoadingState::new(AppState::Loading).continue_to_state(AppState::Running),
+            LoadingState::new(AppState::Loading)
+                .continue_to_state(AppState::Running)
+                .load_collection::<MusicAssets>()
+                .load_collection::<BackgroundAssets>(),
         )
         .register_type::<Health>()
         .add_event::<GameOver>()
-        .add_systems(
-            Startup,
-            (setup_physics, spawn_camera, spawn_background, spawn_music),
-        )
+        .add_systems(Startup, (setup_physics, spawn_camera))
+        .add_systems(OnEnter(AppState::Running), (spawn_background, spawn_music))
         .add_plugins((
             AsteroidPlugin,
             PlayerPlugin,
