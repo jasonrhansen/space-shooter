@@ -46,7 +46,15 @@ impl AssetCollection for BackgroundAssets {
     }
 }
 
-pub fn spawn_background(mut commands: Commands, background_assets: Res<BackgroundAssets>) {
+pub fn spawn_background(
+    mut commands: Commands,
+    background_assets: Res<BackgroundAssets>,
+    background: Query<Entity, With<Background>>,
+) {
+    if background.iter().next().is_some() {
+        return;
+    }
+
     commands.spawn((
         SpriteBundle {
             transform: Transform::from_xyz(0.0, 0.0, -1000.0),

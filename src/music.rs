@@ -12,6 +12,7 @@ pub struct MusicAssets {
 }
 
 pub fn spawn_music(music_assets: Res<MusicAssets>, audio: Res<Audio>) {
+    audio.stop();
     audio
         .play(music_assets.sci_fi_dramatic_theme_sound.clone())
         .with_volume(0.2)
