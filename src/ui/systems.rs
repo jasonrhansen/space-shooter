@@ -47,17 +47,17 @@ pub fn setup(mut commands: Commands) {
 }
 
 pub fn update_health_text(
-    mut health_text_query: Query<&mut Text, With<HealthText>>,
-    player_health_query: Query<&Health, With<Player>>,
+    mut health_text: Query<&mut Text, With<HealthText>>,
+    player_health: Query<&Health, With<Player>>,
 ) {
-    if let Ok(health) = player_health_query.get_single() {
-        if let Ok(mut text) = health_text_query.get_single_mut() {
+    if let Ok(health) = player_health.get_single() {
+        if let Ok(mut text) = health_text.get_single_mut() {
             text.sections[0].value = format!("Health: {}%", health.percent);
         }
     }
 }
 
-pub fn update_score_text(score: Res<Score>, mut query: Query<&mut Text, With<ScoreText>>) {
+pub fn update_score_text(mut query: Query<&mut Text, With<ScoreText>>, score: Res<Score>) {
     if score.is_changed() {
         if let Ok(mut text) = query.get_single_mut() {
             text.sections[0].value = format!("Score: {}", score.value);
@@ -173,11 +173,11 @@ pub fn spawn_paused_screen(mut commands: Commands, ui_assets: Res<UiAssets>, aud
 
 pub fn despawn_paused_screen(
     mut commands: Commands,
-    query: Query<Entity, With<PausedMenu>>,
+    paused_manu: Query<Entity, With<PausedMenu>>,
     ui_assets: Res<UiAssets>,
     audio: Res<Audio>,
 ) {
-    if let Ok(entity) = query.get_single() {
+    if let Ok(entity) = paused_manu.get_single() {
         commands.entity(entity).despawn_recursive();
         audio.play(ui_assets.resume_game_sound.clone());
     }
@@ -201,12 +201,12 @@ pub fn button_interaction_color(
 }
 
 pub fn resume_game_button_action(
-    mut button_query: Query<&Interaction, (Changed<Interaction>, With<ResumeGameButton>)>,
+    mut buttons: Query<&Interaction, (Changed<Interaction>, With<ResumeGameButton>)>,
     mut next_game_state: ResMut<NextState<GameState>>,
     ui_assets: Res<UiAssets>,
     audio: Res<Audio>,
 ) {
-    if let Ok(interaction) = button_query.get_single_mut() {
+    if let Ok(interaction) = buttons.get_single_mut() {
         if *interaction == Interaction::Pressed {
             next_game_state.set(GameState::Playing);
             audio.play(ui_assets.resume_game_sound.clone());
@@ -215,11 +215,11 @@ pub fn resume_game_button_action(
 }
 
 pub fn new_game_button_action(
-    mut button_query: Query<&Interaction, (Changed<Interaction>, With<NewGameButton>)>,
+    mut buttons: Query<&Interaction, (Changed<Interaction>, With<NewGameButton>)>,
     mut next_app_state: ResMut<NextState<AppState>>,
     mut next_game_state: ResMut<NextState<GameState>>,
 ) {
-    if let Ok(interaction) = button_query.get_single_mut() {
+    if let Ok(interaction) = buttons.get_single_mut() {
         if *interaction == Interaction::Pressed {
             next_app_state.set(AppState::Loading);
             next_game_state.set(GameState::Playing);
@@ -228,12 +228,12 @@ pub fn new_game_button_action(
 }
 
 pub fn quit_game_button_action(
-    mut button_query: Query<&Interaction, (Changed<Interaction>, With<QuitGameButton>)>,
-    mut exit: EventWriter<AppExit>,
+    mut buttons: Query<&Interaction, (Changed<Interaction>, With<QuitGameButton>)>,
+    mut exit_writer: EventWriter<AppExit>,
 ) {
-    if let Ok(interaction) = button_query.get_single_mut() {
+    if let Ok(interaction) = buttons.get_single_mut() {
         if *interaction == Interaction::Pressed {
-            exit.send(AppExit);
+            exit_writer.send(AppExit);
         }
     }
 }
@@ -317,8 +317,11 @@ pub fn spawn_game_over_screen(mut commands: Commands) {
         });
 }
 
-pub fn despawn_game_over_screen(mut commands: Commands, query: Query<Entity, With<GameOverMenu>>) {
-    if let Ok(entity) = query.get_single() {
+pub fn despawn_game_over_screen(
+    mut commands: Commands,
+    game_over_menu: Query<Entity, With<GameOverMenu>>,
+) {
+    if let Ok(entity) = game_over_menu.get_single() {
         commands.entity(entity).despawn_recursive();
     }
 }

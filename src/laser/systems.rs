@@ -12,11 +12,11 @@ use std::f32::consts::PI;
 
 pub fn spawn_lasers(
     mut commands: Commands,
-    mut event_reader: EventReader<SpawnLaser>,
+    mut spawn_laser_events: EventReader<SpawnLaser>,
     laser_assets: Res<LaserAssets>,
     audio: Res<Audio>,
 ) {
-    event_reader.read().take(1).for_each(|spawn_laser| {
+    spawn_laser_events.read().take(1).for_each(|spawn_laser| {
         audio.play(laser_assets.laser_sound.clone());
 
         let transform = Transform::from_xyz(spawn_laser.x, spawn_laser.y, -1.0).with_rotation(
@@ -44,15 +44,15 @@ pub fn spawn_lasers(
     });
 }
 
-pub fn new_game_despawn_lasers(mut commands: Commands, lasers_query: Query<Entity, With<Laser>>) {
-    for entity in lasers_query.iter() {
+pub fn new_game_despawn_lasers(mut commands: Commands, lasers: Query<Entity, With<Laser>>) {
+    for entity in lasers.iter() {
         commands.entity(entity).despawn();
     }
 }
 
 pub fn despawn_offscreen_lasers(
     mut commands: Commands,
-    laser_query: Query<(Entity, &Transform), With<Laser>>,
+    lasers: Query<(Entity, &Transform), With<Laser>>,
 ) {
     let max_offscreen = 20.0;
     let x_min = -max_offscreen;
@@ -60,7 +60,7 @@ pub fn despawn_offscreen_lasers(
     let y_min = -max_offscreen;
     let y_max = VIEWPORT_HEIGHT + max_offscreen;
 
-    for (entity, transform) in laser_query.iter() {
+    for (entity, transform) in lasers.iter() {
         if transform.translation.x < x_min
             || transform.translation.x > x_max
             || transform.translation.y < y_min
@@ -73,17 +73,17 @@ pub fn despawn_offscreen_lasers(
 
 pub fn laser_hit_asteroid(
     mut commands: Commands,
-    mut event_reader: EventReader<CollisionEvent>,
-    laser_query: Query<Entity, With<Laser>>,
-    asteroid_query: Query<Entity, With<Asteroid>>,
+    mut collision_events: EventReader<CollisionEvent>,
+    lasers: Query<Entity, With<Laser>>,
+    asteroids: Query<Entity, With<Asteroid>>,
 ) {
-    for collision_event in event_reader.read() {
+    for collision_event in collision_events.read() {
         let (is_started, entity1, entity2) = match collision_event {
             CollisionEvent::Started(entity1, entity2, _flags) => (true, *entity1, *entity2),
             CollisionEvent::Stopped(entity1, entity2, _flags) => (false, *entity1, *entity2),
         };
-        for laser_entity in laser_query.iter() {
-            for asteroid_entity in asteroid_query.iter() {
+        for laser_entity in lasers.iter() {
+            for asteroid_entity in asteroids.iter() {
                 if entity1 == laser_entity && entity2 == asteroid_entity
                     || entity1 == asteroid_entity && entity2 == laser_entity
                 {

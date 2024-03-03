@@ -48,8 +48,8 @@ impl AssetCollection for BackgroundAssets {
 
 pub fn spawn_background(
     mut commands: Commands,
-    background_assets: Res<BackgroundAssets>,
     background: Query<Entity, With<Background>>,
+    background_assets: Res<BackgroundAssets>,
 ) {
     if background.iter().next().is_some() {
         return;

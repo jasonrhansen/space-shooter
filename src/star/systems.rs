@@ -8,10 +8,10 @@ use rand::prelude::*;
 
 pub fn new_game_spawn_stars(
     mut commands: Commands,
+    stars: Query<Entity, With<Star>>,
     star_assets: Res<StarAssets>,
-    stars_query: Query<Entity, With<Star>>,
 ) {
-    for entity in stars_query.iter() {
+    for entity in stars.iter() {
         commands.entity(entity).despawn();
     }
 

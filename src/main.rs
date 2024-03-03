@@ -96,24 +96,24 @@ fn main() {
 #[derive(Event)]
 pub struct GameOver;
 
-pub fn exit_game(mut exit: EventWriter<AppExit>, keyboard_input: Res<ButtonInput<KeyCode>>) {
+pub fn exit_game(mut exit_writer: EventWriter<AppExit>, keyboard_input: Res<ButtonInput<KeyCode>>) {
     if keyboard_input.just_pressed(KeyCode::Escape) {
-        exit.send(AppExit);
+        exit_writer.send(AppExit);
     }
 }
 
 pub fn handle_game_over(
-    mut game_over_reader: EventReader<GameOver>,
+    mut game_over_events: EventReader<GameOver>,
     mut next_app_state: ResMut<NextState<AppState>>,
 ) {
-    if game_over_reader.read().next().is_some() {
+    if game_over_events.read().next().is_some() {
         next_app_state.set(AppState::GameOver);
     }
 }
 
 pub fn update_paused_state(
-    game_state: ResMut<State<GameState>>,
     mut next_game_state: ResMut<NextState<GameState>>,
+    game_state: Res<State<GameState>>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
 ) {
     if keyboard_input.just_pressed(KeyCode::Enter) {
@@ -131,9 +131,9 @@ pub fn setup_physics(mut rapier_config: ResMut<RapierConfiguration>) {
 }
 
 pub fn handle_physics_active(
+    mut rapier_config: ResMut<RapierConfiguration>,
     app_state: Res<State<AppState>>,
     game_state: Res<State<GameState>>,
-    mut rapier_config: ResMut<RapierConfiguration>,
 ) {
     rapier_config.physics_pipeline_active =
         app_state.as_ref() == &AppState::Running && game_state.as_ref() == &GameState::Playing;

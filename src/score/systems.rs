@@ -7,11 +7,11 @@ pub fn new_game_reset_score(mut score: ResMut<Score>) {
 }
 
 pub fn update_high_scores(
-    mut game_over_reader: EventReader<GameOver>,
+    mut game_over_events: EventReader<GameOver>,
     mut high_scores: ResMut<HighScores>,
     score: Res<Score>,
 ) {
-    if game_over_reader.read().next().is_some() {
+    if game_over_events.read().next().is_some() {
         high_scores.scores.push(("Player".to_string(), score.value));
         high_scores.scores.sort_by(|a, b| b.1.cmp(&a.1));
         high_scores.scores.truncate(5);

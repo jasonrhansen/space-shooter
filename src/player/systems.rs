@@ -13,15 +13,15 @@ use std::f32::consts::PI;
 
 pub fn new_game_spawn_player(
     mut commands: Commands,
+    player: Query<Entity, With<Player>>,
+    mut next_player_state: ResMut<NextState<PlayerState>>,
     player_assets: Res<PlayerAssets>,
     collision_shapes: Res<PlayerCollisionConvexShapes>,
-    player_query: Query<Entity, With<Player>>,
-    mut next_player_state: ResMut<NextState<PlayerState>>,
     audio: Res<Audio>,
 ) {
     next_player_state.set(PlayerState::Alive);
 
-    for entity in player_query.iter() {
+    for entity in player.iter() {
         commands.entity(entity).despawn_recursive();
     }
 
@@ -103,11 +103,11 @@ pub fn new_game_spawn_player(
 pub fn player_input(
     mut spawn_laser_writer: EventWriter<SpawnLaser>,
     mut thruster_writer: EventWriter<PlayerThrusterChanged>,
-    mut player_query: Query<(&mut Player, &Transform), With<Player>>,
+    mut player: Query<(&mut Player, &Transform), With<Player>>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
     time: Res<Time>,
 ) {
-    if let Ok((mut player, transform)) = player_query.get_single_mut() {
+    if let Ok((mut player, transform)) = player.get_single_mut() {
         if keyboard_input.pressed(KeyCode::ArrowLeft) || keyboard_input.pressed(KeyCode::KeyA) {
             player.direction = player.direction.rotate(Vec2::from_angle(PI / 32.0));
         }
@@ -145,10 +145,10 @@ pub fn player_input(
 }
 
 pub fn player_movement(
-    mut player_query: Query<(&Player, &mut Transform), With<Player>>,
+    mut player: Query<(&Player, &mut Transform), With<Player>>,
     time: Res<Time>,
 ) {
-    if let Ok((player, mut transform)) = player_query.get_single_mut() {
+    if let Ok((player, mut transform)) = player.get_single_mut() {
         transform.translation +=
             Vec3::new(player.velocity.x, player.velocity.y, 0.0) * time.delta_seconds();
 
@@ -157,14 +157,14 @@ pub fn player_movement(
     }
 }
 
-pub fn wrap_player_movement(mut player_query: Query<&mut Transform, With<Player>>) {
+pub fn wrap_player_movement(mut player: Query<&mut Transform, With<Player>>) {
     let half_player_size = PLAYER_SIZE / 2.0;
     let x_min = -half_player_size;
     let x_max = VIEWPORT_WIDTH + half_player_size;
     let y_min = -half_player_size;
     let y_max = VIEWPORT_HEIGHT + half_player_size;
 
-    if let Ok(mut transform) = player_query.get_single_mut() {
+    if let Ok(mut transform) = player.get_single_mut() {
         if transform.translation.x < x_min {
             transform.translation.x = x_max - 1.0;
         } else if transform.translation.x > x_max {
@@ -181,19 +181,19 @@ pub fn wrap_player_movement(mut player_query: Query<&mut Transform, With<Player>
 
 pub fn player_hit_asteroid(
     mut commands: Commands,
-    mut player_query: Query<(Entity, &mut Player, &CollidingEntities, &mut Health)>,
-    asteroid_query: Query<Entity, With<Asteroid>>,
+    mut player: Query<(Entity, &mut Player, &CollidingEntities, &mut Health)>,
+    asteroids: Query<Entity, With<Asteroid>>,
     mut next_player_state: ResMut<NextState<PlayerState>>,
 ) {
     if let Ok((player_entity, mut player, colliding_entities, mut player_health)) =
-        player_query.get_single_mut()
+        player.get_single_mut()
     {
         if !player.take_damage {
             return;
         }
 
         for colliding_entity in colliding_entities.iter() {
-            if asteroid_query.contains(colliding_entity) {
+            if asteroids.contains(colliding_entity) {
                 player_health.percent = player_health.percent.saturating_sub(10);
 
                 if player_health.percent == 0 {
@@ -210,13 +210,13 @@ pub fn player_hit_asteroid(
 }
 
 pub fn player_death(
-    player_assets: Res<PlayerAssets>,
     mut commands: Commands,
-    player_query: Query<Entity, With<Player>>,
-    audio: Res<Audio>,
     mut thruster_writer: EventWriter<PlayerThrusterChanged>,
+    player: Query<Entity, With<Player>>,
+    audio: Res<Audio>,
+    player_assets: Res<PlayerAssets>,
 ) {
-    for player_entity in player_query.iter() {
+    for player_entity in player.iter() {
         thruster_writer.send(PlayerThrusterChanged::None);
 
         audio.play(player_assets.explosion_sound.clone());
@@ -231,11 +231,11 @@ pub fn player_death(
 
 pub fn player_death_timer(
     mut commands: Commands,
-    time: Res<Time>,
-    mut player_query: Query<(Entity, &mut DeathTimer), With<Player>>,
     mut game_over_writer: EventWriter<GameOver>,
+    mut player: Query<(Entity, &mut DeathTimer), With<Player>>,
+    time: Res<Time>,
 ) {
-    if let Ok((player_entity, mut death_timer)) = player_query.get_single_mut() {
+    if let Ok((player_entity, mut death_timer)) = player.get_single_mut() {
         death_timer.tick(time.delta());
 
         if death_timer.just_finished() {
@@ -247,10 +247,10 @@ pub fn player_death_timer(
 
 pub fn player_damage_timer(
     mut commands: Commands,
+    mut player: Query<(Entity, &mut Player, &mut DamageTimer), With<Player>>,
     time: Res<Time>,
-    mut player_query: Query<(Entity, &mut Player, &mut DamageTimer), With<Player>>,
 ) {
-    if let Ok((player_entity, mut player, mut damage_timer)) = player_query.get_single_mut() {
+    if let Ok((player_entity, mut player, mut damage_timer)) = player.get_single_mut() {
         damage_timer.tick(time.delta());
 
         if damage_timer.just_finished() {
@@ -261,12 +261,12 @@ pub fn player_damage_timer(
 }
 
 pub fn player_hit_star(
-    player_assets: Res<PlayerAssets>,
     mut commands: Commands,
     player_colliding_entities: Query<&CollidingEntities, With<Player>>,
     stars: Query<Entity, With<Star>>,
     mut score: ResMut<Score>,
     audio: Res<Audio>,
+    player_assets: Res<PlayerAssets>,
 ) {
     if let Ok(colliding_entities) = player_colliding_entities.get_single() {
         for star_entity in stars.iter() {
@@ -282,33 +282,33 @@ pub fn player_hit_star(
 pub fn thruster_visibility(
     mut commands: Commands,
     mut thrust_changed_events: EventReader<PlayerThrusterChanged>,
-    player_children_query: Query<&Children, With<Player>>,
-    forward_thruster_query: Query<&ForwardThruster>,
-    backward_thruster_query: Query<&BackwardThruster>,
+    player_children: Query<&Children, With<Player>>,
+    forward_thruster: Query<&ForwardThruster>,
+    backward_thruster: Query<&BackwardThruster>,
 ) {
     if let Some(event) = thrust_changed_events.read().last() {
-        if let Ok(children) = player_children_query.get_single() {
+        if let Ok(children) = player_children.get_single() {
             match event {
                 PlayerThrusterChanged::Forward => {
                     for &child in children.iter() {
-                        if forward_thruster_query.contains(child) {
+                        if forward_thruster.contains(child) {
                             commands.entity(child).insert(Visibility::Inherited);
                         }
                     }
                 }
                 PlayerThrusterChanged::Backward => {
                     for &child in children.iter() {
-                        if backward_thruster_query.contains(child) {
+                        if backward_thruster.contains(child) {
                             commands.entity(child).insert(Visibility::Inherited);
                         }
                     }
                 }
                 PlayerThrusterChanged::None => {
                     for &child in children.iter() {
-                        if forward_thruster_query.contains(child) {
+                        if forward_thruster.contains(child) {
                             commands.entity(child).insert(Visibility::Hidden);
                         }
-                        if backward_thruster_query.contains(child) {
+                        if backward_thruster.contains(child) {
                             commands.entity(child).insert(Visibility::Hidden);
                         }
                     }
@@ -320,8 +320,8 @@ pub fn thruster_visibility(
 
 pub fn thruster_sound(
     mut thrust_changed_events: EventReader<PlayerThrusterChanged>,
-    mut audio_instances: ResMut<Assets<AudioInstance>>,
     thruster_sound: Query<&ThrusterSound, With<Player>>,
+    mut audio_instances: ResMut<Assets<AudioInstance>>,
 ) {
     if let Ok(thruster_handle) = thruster_sound.get_single() {
         if let Some(instance) = audio_instances.get_mut(&thruster_handle.0) {
@@ -341,11 +341,11 @@ pub fn thruster_sound(
 
 pub fn spawn_player_explosion(
     mut commands: Commands,
-    player_query: Query<&GlobalTransform, With<Player>>,
+    player: Query<&GlobalTransform, With<Player>>,
     player_assets: Res<PlayerAssets>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    if let Ok(player_global_transform) = player_query.get_single() {
+    if let Ok(player_global_transform) = player.get_single() {
         let texture = player_assets.explosion_texture.clone();
         let layout = TextureAtlasLayout::from_grid(Vec2::new(276.0, 306.5), 5, 2, None, None);
         let texture_atlas_layout = texture_atlas_layouts.add(layout);
@@ -370,9 +370,8 @@ pub fn spawn_player_explosion(
 }
 
 pub fn animate_player_explosion(
-    time: Res<Time>,
     mut commands: Commands,
-    mut query: Query<
+    mut explosion: Query<
         (
             Entity,
             &AnimationIndices,
@@ -381,8 +380,9 @@ pub fn animate_player_explosion(
         ),
         With<PlayerExplosion>,
     >,
+    time: Res<Time>,
 ) {
-    for (entity, indices, mut timer, mut atlas) in &mut query {
+    for (entity, indices, mut timer, mut atlas) in &mut explosion {
         timer.tick(time.delta());
         if timer.just_finished() {
             if atlas.index == indices.last {

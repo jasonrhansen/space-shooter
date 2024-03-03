@@ -14,11 +14,11 @@ use std::f32::consts::PI;
 
 pub fn new_game_spawn_asteroids(
     mut commands: Commands,
-    asteroids_query: Query<Entity, With<Asteroid>>,
+    asteroids: Query<Entity, With<Asteroid>>,
     collision_shapes: Res<AsteroidCollisionConvexShapes>,
     asteroid_assets: Res<AsteroidAssets>,
 ) {
-    for entity in asteroids_query.iter() {
+    for entity in asteroids.iter() {
         commands.entity(entity).despawn();
     }
 
@@ -77,14 +77,14 @@ pub fn new_game_spawn_asteroids(
     }
 }
 
-pub fn wrap_asteroid_movement(mut asteroid_query: Query<&mut Transform, With<Asteroid>>) {
+pub fn wrap_asteroid_movement(mut asteroids: Query<&mut Transform, With<Asteroid>>) {
     let half_asteroid_size = ASTEROID_SIZE / 2.0;
     let x_min = -half_asteroid_size;
     let x_max = VIEWPORT_WIDTH + half_asteroid_size;
     let y_min = -half_asteroid_size;
     let y_max = VIEWPORT_HEIGHT + half_asteroid_size;
 
-    for mut transform in asteroid_query.iter_mut() {
+    for mut transform in asteroids.iter_mut() {
         if transform.translation.x < x_min {
             transform.translation.x = x_max - 1.0;
         } else if transform.translation.x > x_max {
