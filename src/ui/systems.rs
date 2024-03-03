@@ -4,11 +4,6 @@ use crate::{health::Health, player::components::Player, score::resources::Score}
 use bevy::app::AppExit;
 use bevy_kira_audio::prelude::*;
 
-pub fn load_ui_assets(asset_server: Res<AssetServer>, mut ui_assets: ResMut<UiAssets>) {
-    ui_assets.pause_sound = asset_server.load("audio/confirmation_001.ogg");
-    ui_assets.resume_game_sound = asset_server.load("audio/confirmation_002.ogg");
-}
-
 pub fn setup(mut commands: Commands) {
     commands.spawn((
         TextBundle::from_section(
