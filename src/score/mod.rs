@@ -2,6 +2,8 @@ use bevy::prelude::*;
 use resources::*;
 use systems::*;
 
+use crate::state::AppState;
+
 pub mod resources;
 pub mod systems;
 
@@ -10,15 +12,6 @@ pub struct ScorePlugin;
 impl Plugin for ScorePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Score>()
-            .init_resource::<HighScores>()
-            .add_systems(
-                Update,
-                (
-                    new_game_reset_score,
-                    update_high_scores,
-                    high_scores_updated,
-                )
-                    .chain(),
-            );
+            .add_systems(OnEnter(AppState::Running), new_game_reset_score);
     }
 }

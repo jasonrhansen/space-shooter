@@ -19,6 +19,7 @@ impl Plugin for UiPlugin {
         app.configure_loading_state(
             LoadingStateConfig::new(AppState::Loading).load_collection::<UiAssets>(),
         )
+        .add_systems(OnEnter(AppState::Running), setup)
         .add_systems(
             Update,
             (

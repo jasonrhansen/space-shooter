@@ -4,41 +4,50 @@ use crate::{health::Health, player::components::Player, score::resources::Score}
 use bevy::app::AppExit;
 use bevy_kira_audio::prelude::*;
 
-pub fn setup(mut commands: Commands) {
-    commands.spawn((
-        TextBundle::from_section(
-            "Health: 100%",
-            TextStyle {
-                font_size: 32.0,
+pub fn setup(
+    mut commands: Commands,
+    score_text: Query<Entity, With<ScoreText>>,
+    health_text: Query<Entity, With<HealthText>>,
+) {
+    if score_text.get_single().is_err() {
+        commands.spawn((
+            TextBundle::from_section(
+                "Score: 0",
+                TextStyle {
+                    font_size: 32.0,
+                    ..default()
+                },
+            )
+            .with_text_justify(JustifyText::Right)
+            .with_style(Style {
+                position_type: PositionType::Absolute,
+                bottom: Val::Px(5.0),
+                right: Val::Px(5.0),
                 ..default()
-            },
-        )
-        .with_text_justify(JustifyText::Left)
-        .with_style(Style {
-            position_type: PositionType::Absolute,
-            bottom: Val::Px(5.0),
-            left: Val::Px(5.0),
-            ..default()
-        }),
-        ScoreText,
-    ));
-    commands.spawn((
-        TextBundle::from_section(
-            "Score: 0",
-            TextStyle {
-                font_size: 32.0,
+            }),
+            ScoreText,
+        ));
+    }
+
+    if health_text.get_single().is_err() {
+        commands.spawn((
+            TextBundle::from_section(
+                "Health: 100%",
+                TextStyle {
+                    font_size: 32.0,
+                    ..default()
+                },
+            )
+            .with_text_justify(JustifyText::Left)
+            .with_style(Style {
+                position_type: PositionType::Absolute,
+                bottom: Val::Px(5.0),
+                left: Val::Px(5.0),
                 ..default()
-            },
-        )
-        .with_text_justify(JustifyText::Right)
-        .with_style(Style {
-            position_type: PositionType::Absolute,
-            bottom: Val::Px(5.0),
-            right: Val::Px(5.0),
-            ..default()
-        }),
-        HealthText,
-    ));
+            }),
+            HealthText,
+        ));
+    }
 }
 
 pub fn update_health_text(
