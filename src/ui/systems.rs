@@ -72,7 +72,7 @@ pub fn spawn_paused_screen(mut commands: Commands, ui_assets: Res<UiAssets>, aud
                 height: Val::Percent(100.0),
                 ..default()
             },
-            BackgroundColor(Color::srgba(0.0, 0.0, 0.0, 0.5).into()),
+            BackgroundColor(Color::srgba(0.0, 0.0, 0.0, 0.5)),
             PausedMenu,
         ))
         .with_children(|parent| {
@@ -80,7 +80,7 @@ pub fn spawn_paused_screen(mut commands: Commands, ui_assets: Res<UiAssets>, aud
             parent
                 .spawn((
                     Button {},
-                    BackgroundColor(Color::srgba(0.0, 0.5, 0.0, 0.5).into()),
+                    BackgroundColor(Color::srgba(0.0, 0.5, 0.0, 0.5)),
                     Node {
                         justify_content: JustifyContent::Center,
                         align_items: AlignItems::Center,
@@ -97,7 +97,7 @@ pub fn spawn_paused_screen(mut commands: Commands, ui_assets: Res<UiAssets>, aud
             parent
                 .spawn((
                     Button {},
-                    BackgroundColor(Color::srgba(0.5, 0.5, 0.0, 0.5).into()),
+                    BackgroundColor(Color::srgba(0.5, 0.5, 0.0, 0.5)),
                     Node {
                         justify_content: JustifyContent::Center,
                         align_items: AlignItems::Center,
@@ -114,7 +114,7 @@ pub fn spawn_paused_screen(mut commands: Commands, ui_assets: Res<UiAssets>, aud
             parent
                 .spawn((
                     Button {},
-                    BackgroundColor(Color::srgba(0.5, 0.0, 0.0, 0.5).into()),
+                    BackgroundColor(Color::srgba(0.5, 0.0, 0.0, 0.5)),
                     Node {
                         justify_content: JustifyContent::Center,
                         align_items: AlignItems::Center,
@@ -212,7 +212,7 @@ pub fn spawn_game_over_screen(mut commands: Commands) {
                 height: Val::Percent(100.0),
                 ..default()
             },
-            BackgroundColor(Color::srgba(0.0, 0.0, 0.0, 0.5).into()),
+            BackgroundColor(Color::srgba(0.0, 0.0, 0.0, 0.5)),
             GameOverMenu,
         ))
         .with_children(|parent| {
@@ -220,7 +220,7 @@ pub fn spawn_game_over_screen(mut commands: Commands) {
             parent
                 .spawn((
                     Button {},
-                    BackgroundColor(Color::srgba(0.0, 0.5, 0.0, 0.5).into()),
+                    BackgroundColor(Color::srgba(0.0, 0.5, 0.0, 0.5)),
                     Node {
                         justify_content: JustifyContent::Center,
                         align_items: AlignItems::Center,
@@ -237,7 +237,7 @@ pub fn spawn_game_over_screen(mut commands: Commands) {
             parent
                 .spawn((
                     Button {},
-                    BackgroundColor(Color::srgba(0.5, 0.0, 0.0, 0.5).into()),
+                    BackgroundColor(Color::srgba(0.5, 0.0, 0.0, 0.5)),
                     Node {
                         justify_content: JustifyContent::Center,
                         align_items: AlignItems::Center,

@@ -8,7 +8,7 @@ pub fn spawn_camera(mut commands: Commands, window: Query<&Window, With<PrimaryW
     let window = window.get_single().unwrap();
     commands.spawn((
         GameCamera,
-        Camera2d::default(),
+        Camera2d,
         Transform::from_xyz(window.width() / 2.0, window.height() / 2.0, 0.0),
         OrthographicProjection {
             scaling_mode: ScalingMode::AutoMin {
