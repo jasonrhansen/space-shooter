@@ -347,21 +347,21 @@ pub fn spawn_player_explosion(
 ) {
     if let Ok(player_global_transform) = player.get_single() {
         let texture = player_assets.explosion_texture.clone();
-        let layout = TextureAtlasLayout::from_grid(Vec2::new(276.0, 306.5), 5, 2, None, None);
+        let layout = TextureAtlasLayout::from_grid(UVec2::new(276, 306), 5, 2, None, None);
         let texture_atlas_layout = texture_atlas_layouts.add(layout);
         let animation_indices = AnimationIndices { first: 0, last: 9 };
         let player_location = player_global_transform.translation().xy();
         commands.spawn(PlayerExplosionBundle {
             player_explosion: PlayerExplosion,
-            sprite_sheet_bundle: SpriteSheetBundle {
+            sprite_bundle: SpriteBundle {
                 texture,
-                atlas: TextureAtlas {
-                    layout: texture_atlas_layout,
-                    index: animation_indices.first,
-                },
                 visibility: Visibility::Visible,
                 transform: Transform::from_xyz(player_location.x, player_location.y, 5.0),
                 ..default()
+            },
+            texture_atlas: TextureAtlas {
+                layout: texture_atlas_layout,
+                index: animation_indices.first,
             },
             animation_indices,
             animation_timer: AnimationTimer(Timer::from_seconds(0.075, TimerMode::Repeating)),

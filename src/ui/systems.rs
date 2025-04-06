@@ -83,7 +83,7 @@ pub fn spawn_paused_screen(mut commands: Commands, ui_assets: Res<UiAssets>, aud
                     height: Val::Percent(100.0),
                     ..default()
                 },
-                background_color: Color::rgba(0.0, 0.0, 0.0, 0.5).into(),
+                background_color: Color::srgba(0.0, 0.0, 0.0, 0.5).into(),
                 ..default()
             },
             PausedMenu,
@@ -106,7 +106,7 @@ pub fn spawn_paused_screen(mut commands: Commands, ui_assets: Res<UiAssets>, aud
                             height: Val::Px(MENU_BUTTON_HEIGHT),
                             ..default()
                         },
-                        background_color: Color::rgba(0.0, 0.5, 0.0, 0.5).into(),
+                        background_color: Color::srgba(0.0, 0.5, 0.0, 0.5).into(),
                         ..default()
                     },
                     ResumeGameButton,
@@ -131,7 +131,7 @@ pub fn spawn_paused_screen(mut commands: Commands, ui_assets: Res<UiAssets>, aud
                             height: Val::Px(MENU_BUTTON_HEIGHT),
                             ..default()
                         },
-                        background_color: Color::rgba(0.5, 0.5, 0.0, 0.5).into(),
+                        background_color: Color::srgba(0.5, 0.5, 0.0, 0.5).into(),
                         ..default()
                     },
                     NewGameButton,
@@ -156,7 +156,7 @@ pub fn spawn_paused_screen(mut commands: Commands, ui_assets: Res<UiAssets>, aud
                             height: Val::Px(MENU_BUTTON_HEIGHT),
                             ..default()
                         },
-                        background_color: Color::rgba(0.5, 0.0, 0.0, 0.5).into(),
+                        background_color: Color::srgba(0.5, 0.0, 0.0, 0.5).into(),
                         ..default()
                     },
                     QuitGameButton,
@@ -200,7 +200,7 @@ pub fn button_interaction_color(
             Interaction::None => 0.5,
         };
 
-        background_color.0.set_a(alpha);
+        background_color.0.set_alpha(alpha);
     }
 }
 
@@ -237,7 +237,7 @@ pub fn quit_game_button_action(
 ) {
     if let Ok(interaction) = buttons.get_single_mut() {
         if *interaction == Interaction::Pressed {
-            exit_writer.send(AppExit);
+            exit_writer.send(AppExit::Success);
         }
     }
 }
@@ -256,7 +256,7 @@ pub fn spawn_game_over_screen(mut commands: Commands) {
                     height: Val::Percent(100.0),
                     ..default()
                 },
-                background_color: Color::rgba(0.0, 0.0, 0.0, 0.5).into(),
+                background_color: Color::srgba(0.0, 0.0, 0.0, 0.5).into(),
                 ..default()
             },
             GameOverMenu,
@@ -279,7 +279,7 @@ pub fn spawn_game_over_screen(mut commands: Commands) {
                             height: Val::Px(MENU_BUTTON_HEIGHT),
                             ..default()
                         },
-                        background_color: Color::rgba(0.0, 0.5, 0.0, 0.5).into(),
+                        background_color: Color::srgba(0.0, 0.5, 0.0, 0.5).into(),
                         ..default()
                     },
                     NewGameButton,
@@ -304,7 +304,7 @@ pub fn spawn_game_over_screen(mut commands: Commands) {
                             height: Val::Px(MENU_BUTTON_HEIGHT),
                             ..default()
                         },
-                        background_color: Color::rgba(0.5, 0.0, 0.0, 0.5).into(),
+                        background_color: Color::srgba(0.5, 0.0, 0.0, 0.5).into(),
                         ..default()
                     },
                     QuitGameButton,

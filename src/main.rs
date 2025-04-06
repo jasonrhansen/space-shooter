@@ -98,7 +98,7 @@ pub struct GameOver;
 
 pub fn exit_game(mut exit_writer: EventWriter<AppExit>, keyboard_input: Res<ButtonInput<KeyCode>>) {
     if keyboard_input.just_pressed(KeyCode::Escape) {
-        exit_writer.send(AppExit);
+        exit_writer.send(AppExit::Success);
     }
 }
 

@@ -60,7 +60,8 @@ pub struct PlayerExplosion;
 #[derive(Bundle)]
 pub struct PlayerExplosionBundle {
     pub player_explosion: PlayerExplosion,
-    pub sprite_sheet_bundle: SpriteSheetBundle,
+    pub sprite_bundle: SpriteBundle,
+    pub texture_atlas: TextureAtlas,
     pub animation_indices: AnimationIndices,
     pub animation_timer: AnimationTimer,
 }

@@ -9,7 +9,7 @@ use crate::VIEWPORT_HEIGHT;
 use crate::VIEWPORT_WIDTH;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use rand::prelude::*;
+use rand::random;
 use std::f32::consts::PI;
 
 pub fn new_game_spawn_asteroids(

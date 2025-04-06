@@ -4,7 +4,7 @@ use crate::collision_groups::*;
 use crate::VIEWPORT_HEIGHT;
 use crate::VIEWPORT_WIDTH;
 use bevy_rapier2d::prelude::*;
-use rand::prelude::*;
+use rand::random;
 
 pub fn new_game_spawn_stars(
     mut commands: Commands,
