@@ -30,7 +30,8 @@ pub struct BackwardThruster;
 pub struct PlayerBundle {
     pub player: Player,
     pub health: Health,
-    pub sprite_bundle: SpriteBundle,
+    pub sprite: Sprite,
+    pub transform: Transform,
     pub player_collision_bundle: PlayerCollisionBundle,
     pub thruster_sound: ThrusterSound,
     pub name: Name,
@@ -60,8 +61,8 @@ pub struct PlayerExplosion;
 #[derive(Bundle)]
 pub struct PlayerExplosionBundle {
     pub player_explosion: PlayerExplosion,
-    pub sprite_bundle: SpriteBundle,
-    pub texture_atlas: TextureAtlas,
+    pub sprite: Sprite,
+    pub transform: Transform,
     pub animation_indices: AnimationIndices,
     pub animation_timer: AnimationTimer,
 }

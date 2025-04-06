@@ -57,7 +57,7 @@ impl Plugin for PlayerPlugin {
                         .run_if(in_state(PlayerState::Dead)),
                     thruster_sound,
                 )
-                    .run_if(in_state(AppState::Running).and_then(in_state(GameState::Playing))),
+                    .run_if(in_state(AppState::Running).and(in_state(GameState::Playing))),
             )
             .add_systems(
                 OnEnter(PlayerState::Dead),

@@ -43,12 +43,8 @@ pub fn spawn_stars_over_time(
 fn spawn_star(position: Vec2, commands: &mut Commands, star_assets: &Res<StarAssets>) {
     commands
         .spawn(Star {})
-        .insert(SpriteBundle {
-            transform: Transform::from_xyz(position.x, position.y, -9.0)
-                .with_scale(Vec3::splat(0.5)),
-            texture: star_assets.star_texture.clone(),
-            ..default()
-        })
+        .insert(Sprite::from_image(star_assets.star_texture.clone()))
+        .insert(Transform::from_xyz(position.x, position.y, -9.0).with_scale(Vec3::splat(0.5)))
         .insert(Sensor)
         .insert(Collider::ball(STAR_SIZE / 2.0))
         .insert(CollisionGroups::new(

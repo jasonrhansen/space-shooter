@@ -26,11 +26,8 @@ pub fn spawn_lasers(
         );
         commands
             .spawn(Laser)
-            .insert(SpriteBundle {
-                transform,
-                texture: laser_assets.laser_texture.clone(),
-                ..default()
-            })
+            .insert(Sprite::from_image(laser_assets.laser_texture.clone()))
+            .insert(transform)
             .insert(Velocity::linear(
                 spawn_laser.direction.normalize() * LASER_SPEED,
             ))
@@ -90,7 +87,7 @@ pub fn laser_hit_asteroid(
                     if is_started {
                         // When colliding into an asteroid we don't want the laser to be visible.
                         // but we still want it to continue the collision to exert a force.
-                        commands.entity(laser_entity).remove::<SpriteBundle>();
+                        commands.entity(laser_entity).remove::<Sprite>();
                     } else {
                         // When done colliding we can despawn the laser.
                         commands.entity(laser_entity).despawn();

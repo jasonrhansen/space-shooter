@@ -2,6 +2,7 @@ use super::*;
 use super::{components::*, resources::UiAssets};
 use crate::{health::Health, player::components::Player, score::resources::Score};
 use bevy::app::AppExit;
+use bevy::sprite::Anchor;
 use bevy_kira_audio::prelude::*;
 
 pub fn setup(
@@ -11,40 +12,22 @@ pub fn setup(
 ) {
     if score_text.get_single().is_err() {
         commands.spawn((
-            TextBundle::from_section(
-                "Score: 0",
-                TextStyle {
-                    font_size: 32.0,
-                    ..default()
-                },
-            )
-            .with_text_justify(JustifyText::Right)
-            .with_style(Style {
-                position_type: PositionType::Absolute,
-                bottom: Val::Px(5.0),
-                right: Val::Px(5.0),
-                ..default()
-            }),
+            Text2d::new("Score: 0"),
+            TextFont::from_font_size(32.0),
+            TextLayout::new_with_justify(JustifyText::Right),
+            Anchor::BottomRight,
+            Transform::from_translation(Vec3::new(5.0, 5.0, 0.0)),
             ScoreText,
         ));
     }
 
     if health_text.get_single().is_err() {
         commands.spawn((
-            TextBundle::from_section(
-                "Health: 100%",
-                TextStyle {
-                    font_size: 32.0,
-                    ..default()
-                },
-            )
-            .with_text_justify(JustifyText::Left)
-            .with_style(Style {
-                position_type: PositionType::Absolute,
-                bottom: Val::Px(5.0),
-                left: Val::Px(5.0),
-                ..default()
-            }),
+            Text2d::new("Health: 100%"),
+            TextFont::from_font_size(32.0),
+            TextLayout::new_with_justify(JustifyText::Left),
+            Anchor::BottomLeft,
+            Transform::from_translation(Vec3::new(5.0, 5.0, 0.0)),
             HealthText,
         ));
     }
@@ -56,7 +39,7 @@ pub fn update_health_text(
 ) {
     if let Ok(health) = player_health.get_single() {
         if let Ok(mut text) = health_text.get_single_mut() {
-            text.sections[0].value = format!("Health: {}%", health.percent);
+            text.0 = format!("Health: {}%", health.percent);
         }
     }
 }
@@ -64,7 +47,7 @@ pub fn update_health_text(
 pub fn update_score_text(mut query: Query<&mut Text, With<ScoreText>>, score: Res<Score>) {
     if score.is_changed() {
         if let Ok(mut text) = query.get_single_mut() {
-            text.sections[0].value = format!("Score: {}", score.value);
+            text.0 = format!("Score: {}", score.value);
         }
     }
 }
@@ -72,103 +55,70 @@ pub fn update_score_text(mut query: Query<&mut Text, With<ScoreText>>, score: Re
 pub fn spawn_paused_screen(mut commands: Commands, ui_assets: Res<UiAssets>, audio: Res<Audio>) {
     commands
         .spawn((
-            NodeBundle {
-                style: Style {
-                    flex_direction: FlexDirection::Column,
-                    justify_content: JustifyContent::Center,
-                    align_items: AlignItems::Center,
-                    row_gap: Val::Px(15.0),
-                    position_type: PositionType::Absolute,
-                    width: Val::Percent(100.0),
-                    height: Val::Percent(100.0),
-                    ..default()
-                },
-                background_color: Color::srgba(0.0, 0.0, 0.0, 0.5).into(),
+            Node {
+                flex_direction: FlexDirection::Column,
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                row_gap: Val::Px(15.0),
+                position_type: PositionType::Absolute,
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
                 ..default()
             },
+            BackgroundColor(Color::srgba(0.0, 0.0, 0.0, 0.5).into()),
             PausedMenu,
         ))
         .with_children(|parent| {
-            parent.spawn(TextBundle::from_section(
-                "Paused",
-                TextStyle {
-                    font_size: 100.0,
-                    ..default()
-                },
-            ));
+            parent.spawn((Text2d::new("Paused"), TextFont::from_font_size(100.0)));
             parent
                 .spawn((
-                    ButtonBundle {
-                        style: Style {
-                            justify_content: JustifyContent::Center,
-                            align_items: AlignItems::Center,
-                            width: Val::Px(MENU_BUTTON_WIDTH),
-                            height: Val::Px(MENU_BUTTON_HEIGHT),
-                            ..default()
-                        },
-                        background_color: Color::srgba(0.0, 0.5, 0.0, 0.5).into(),
+                    Button {},
+                    BackgroundColor(Color::srgba(0.0, 0.5, 0.0, 0.5).into()),
+                    Node {
+                        justify_content: JustifyContent::Center,
+                        align_items: AlignItems::Center,
+                        width: Val::Px(MENU_BUTTON_WIDTH),
+                        height: Val::Px(MENU_BUTTON_HEIGHT),
                         ..default()
                     },
                     ResumeGameButton,
                 ))
                 .with_children(|parent| {
-                    parent.spawn(TextBundle::from_section(
-                        "Resume Game",
-                        TextStyle {
-                            font_size: 50.0,
-                            ..default()
-                        },
-                    ));
+                    parent.spawn((Text2d::new("Resume Game"), TextFont::from_font_size(50.0)));
                 });
 
             parent
                 .spawn((
-                    ButtonBundle {
-                        style: Style {
-                            justify_content: JustifyContent::Center,
-                            align_items: AlignItems::Center,
-                            width: Val::Px(MENU_BUTTON_WIDTH),
-                            height: Val::Px(MENU_BUTTON_HEIGHT),
-                            ..default()
-                        },
-                        background_color: Color::srgba(0.5, 0.5, 0.0, 0.5).into(),
+                    Button {},
+                    BackgroundColor(Color::srgba(0.5, 0.5, 0.0, 0.5).into()),
+                    Node {
+                        justify_content: JustifyContent::Center,
+                        align_items: AlignItems::Center,
+                        width: Val::Px(MENU_BUTTON_WIDTH),
+                        height: Val::Px(MENU_BUTTON_HEIGHT),
                         ..default()
                     },
                     NewGameButton,
                 ))
                 .with_children(|parent| {
-                    parent.spawn(TextBundle::from_section(
-                        "New Game",
-                        TextStyle {
-                            font_size: 50.0,
-                            ..default()
-                        },
-                    ));
+                    parent.spawn((Text2d::new("New Game"), TextFont::from_font_size(50.0)));
                 });
 
             parent
                 .spawn((
-                    ButtonBundle {
-                        style: Style {
-                            justify_content: JustifyContent::Center,
-                            align_items: AlignItems::Center,
-                            width: Val::Px(MENU_BUTTON_WIDTH),
-                            height: Val::Px(MENU_BUTTON_HEIGHT),
-                            ..default()
-                        },
-                        background_color: Color::srgba(0.5, 0.0, 0.0, 0.5).into(),
+                    Button {},
+                    BackgroundColor(Color::srgba(0.5, 0.0, 0.0, 0.5).into()),
+                    Node {
+                        justify_content: JustifyContent::Center,
+                        align_items: AlignItems::Center,
+                        width: Val::Px(MENU_BUTTON_WIDTH),
+                        height: Val::Px(MENU_BUTTON_HEIGHT),
                         ..default()
                     },
                     QuitGameButton,
                 ))
                 .with_children(|parent| {
-                    parent.spawn(TextBundle::from_section(
-                        "Quit",
-                        TextStyle {
-                            font_size: 50.0,
-                            ..default()
-                        },
-                    ));
+                    parent.spawn((Text2d::new("Quit"), TextFont::from_font_size(50.0)));
                 });
         });
 
@@ -245,78 +195,53 @@ pub fn quit_game_button_action(
 pub fn spawn_game_over_screen(mut commands: Commands) {
     commands
         .spawn((
-            NodeBundle {
-                style: Style {
-                    flex_direction: FlexDirection::Column,
-                    justify_content: JustifyContent::Center,
-                    align_items: AlignItems::Center,
-                    row_gap: Val::Px(15.0),
-                    position_type: PositionType::Absolute,
-                    width: Val::Percent(100.0),
-                    height: Val::Percent(100.0),
-                    ..default()
-                },
-                background_color: Color::srgba(0.0, 0.0, 0.0, 0.5).into(),
+            Node {
+                flex_direction: FlexDirection::Column,
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                row_gap: Val::Px(15.0),
+                position_type: PositionType::Absolute,
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
                 ..default()
             },
+            BackgroundColor(Color::srgba(0.0, 0.0, 0.0, 0.5).into()),
             GameOverMenu,
         ))
         .with_children(|parent| {
-            parent.spawn(TextBundle::from_section(
-                "Game Over!",
-                TextStyle {
-                    font_size: 100.0,
-                    ..default()
-                },
-            ));
+            parent.spawn((Text2d::new("Game Over!"), TextFont::from_font_size(100.0)));
             parent
                 .spawn((
-                    ButtonBundle {
-                        style: Style {
-                            justify_content: JustifyContent::Center,
-                            align_items: AlignItems::Center,
-                            width: Val::Px(MENU_BUTTON_WIDTH),
-                            height: Val::Px(MENU_BUTTON_HEIGHT),
-                            ..default()
-                        },
-                        background_color: Color::srgba(0.0, 0.5, 0.0, 0.5).into(),
+                    Button {},
+                    BackgroundColor(Color::srgba(0.0, 0.5, 0.0, 0.5).into()),
+                    Node {
+                        justify_content: JustifyContent::Center,
+                        align_items: AlignItems::Center,
+                        width: Val::Px(MENU_BUTTON_WIDTH),
+                        height: Val::Px(MENU_BUTTON_HEIGHT),
                         ..default()
                     },
                     NewGameButton,
                 ))
                 .with_children(|parent| {
-                    parent.spawn(TextBundle::from_section(
-                        "New Game",
-                        TextStyle {
-                            font_size: 50.0,
-                            ..default()
-                        },
-                    ));
+                    parent.spawn((Text2d::new("New Game"), TextFont::from_font_size(50.0)));
                 });
 
             parent
                 .spawn((
-                    ButtonBundle {
-                        style: Style {
-                            justify_content: JustifyContent::Center,
-                            align_items: AlignItems::Center,
-                            width: Val::Px(MENU_BUTTON_WIDTH),
-                            height: Val::Px(MENU_BUTTON_HEIGHT),
-                            ..default()
-                        },
-                        background_color: Color::srgba(0.5, 0.0, 0.0, 0.5).into(),
+                    Button {},
+                    BackgroundColor(Color::srgba(0.5, 0.0, 0.0, 0.5).into()),
+                    Node {
+                        justify_content: JustifyContent::Center,
+                        align_items: AlignItems::Center,
+                        width: Val::Px(MENU_BUTTON_WIDTH),
+                        height: Val::Px(MENU_BUTTON_HEIGHT),
                         ..default()
                     },
                     QuitGameButton,
                 ))
                 .with_children(|parent| {
-                    parent.spawn(TextBundle::from_section(
-                        "Quit",
-                        TextStyle {
-                            font_size: 50.0,
-                            ..default()
-                        },
-                    ));
+                    parent.spawn((Text::new("Quit"), TextFont::from_font_size(50.0)));
                 });
         });
 }

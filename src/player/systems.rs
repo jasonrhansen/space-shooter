@@ -36,11 +36,8 @@ pub fn new_game_spawn_player(
                 take_damage: true,
             },
             health: Health { percent: 10 },
-            sprite_bundle: SpriteBundle {
-                transform: Transform::from_xyz(VIEWPORT_WIDTH / 2.0, VIEWPORT_HEIGHT / 2.0, 0.0),
-                texture: player_assets.ship_texture.clone(),
-                ..default()
-            },
+            sprite: Sprite::from_image(player_assets.ship_texture.clone()),
+            transform: Transform::from_xyz(VIEWPORT_WIDTH / 2.0, VIEWPORT_HEIGHT / 2.0, 0.0),
             player_collision_bundle: PlayerCollisionBundle {
                 rigid_body: RigidBody::Dynamic,
                 collider: Collider::compound(
@@ -71,32 +68,26 @@ pub fn new_game_spawn_player(
             ),
         })
         .with_children(|parent| {
-            parent.spawn(ForwardThruster).insert(SpriteBundle {
-                transform: Transform::from_xyz(-20.0, -PLAYER_SIZE / 2.0 - 10.0, 0.0),
-                texture: player_assets.fire_texture.clone(),
-                visibility: Visibility::Hidden,
-                ..default()
-            });
-            parent.spawn(ForwardThruster).insert(SpriteBundle {
-                transform: Transform::from_xyz(20.0, -PLAYER_SIZE / 2.0 - 10.0, 0.0),
-                texture: player_assets.fire_texture.clone(),
-                visibility: Visibility::Hidden,
-                ..default()
-            });
-            parent.spawn(BackwardThruster).insert(SpriteBundle {
-                transform: Transform::from_xyz(-30.0, 20.0, 0.0)
-                    .with_rotation(Quat::from_rotation_z(PI)),
-                texture: player_assets.fire_texture.clone(),
-                visibility: Visibility::Hidden,
-                ..default()
-            });
-            parent.spawn(BackwardThruster).insert(SpriteBundle {
-                transform: Transform::from_xyz(30.0, 20.0, 0.0)
-                    .with_rotation(Quat::from_rotation_z(PI)),
-                texture: player_assets.fire_texture.clone(),
-                visibility: Visibility::Hidden,
-                ..default()
-            });
+            parent
+                .spawn(ForwardThruster)
+                .insert(Sprite::from_image(player_assets.fire_texture.clone()))
+                .insert(Transform::from_xyz(-20.0, -PLAYER_SIZE / 2.0 - 10.0, 0.0))
+                .insert(Visibility::Hidden);
+            parent
+                .spawn(ForwardThruster)
+                .insert(Sprite::from_image(player_assets.fire_texture.clone()))
+                .insert(Transform::from_xyz(20.0, -PLAYER_SIZE / 2.0 - 10.0, 0.0))
+                .insert(Visibility::Hidden);
+            parent
+                .spawn(BackwardThruster)
+                .insert(Sprite::from_image(player_assets.fire_texture.clone()))
+                .insert(Transform::from_xyz(-30.0, 20.0, 0.0))
+                .insert(Visibility::Hidden);
+            parent
+                .spawn(BackwardThruster)
+                .insert(Sprite::from_image(player_assets.fire_texture.clone()))
+                .insert(Transform::from_xyz(30.0, 20.0, 0.0))
+                .insert(Visibility::Hidden);
         });
 }
 
@@ -116,7 +107,7 @@ pub fn player_input(
         }
 
         if keyboard_input.pressed(KeyCode::ArrowUp) || keyboard_input.pressed(KeyCode::KeyW) {
-            let v = player.direction * PLAYER_ACCELERATION * time.delta_seconds();
+            let v = player.direction * PLAYER_ACCELERATION * time.delta_secs();
             player.velocity += v;
             player.velocity = player.velocity.clamp_length_max(PLAYER_MAX_SPEED);
 
@@ -124,7 +115,7 @@ pub fn player_input(
         } else if keyboard_input.pressed(KeyCode::ArrowDown)
             || keyboard_input.pressed(KeyCode::KeyS)
         {
-            let v = player.direction * PLAYER_ACCELERATION * time.delta_seconds();
+            let v = player.direction * PLAYER_ACCELERATION * time.delta_secs();
             player.velocity -= v;
             player.velocity = player.velocity.clamp_length_max(PLAYER_MAX_SPEED);
 
@@ -150,7 +141,7 @@ pub fn player_movement(
 ) {
     if let Ok((player, mut transform)) = player.get_single_mut() {
         transform.translation +=
-            Vec3::new(player.velocity.x, player.velocity.y, 0.0) * time.delta_seconds();
+            Vec3::new(player.velocity.x, player.velocity.y, 0.0) * time.delta_secs();
 
         transform.rotation =
             Quat::from_rotation_z(player.direction.y.atan2(player.direction.x) - PI / 2.0);
@@ -346,23 +337,22 @@ pub fn spawn_player_explosion(
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     if let Ok(player_global_transform) = player.get_single() {
-        let texture = player_assets.explosion_texture.clone();
+        let image = player_assets.explosion_texture.clone();
         let layout = TextureAtlasLayout::from_grid(UVec2::new(276, 306), 5, 2, None, None);
         let texture_atlas_layout = texture_atlas_layouts.add(layout);
         let animation_indices = AnimationIndices { first: 0, last: 9 };
         let player_location = player_global_transform.translation().xy();
         commands.spawn(PlayerExplosionBundle {
             player_explosion: PlayerExplosion,
-            sprite_bundle: SpriteBundle {
-                texture,
-                visibility: Visibility::Visible,
-                transform: Transform::from_xyz(player_location.x, player_location.y, 5.0),
+            sprite: Sprite {
+                image,
+                texture_atlas: Some(TextureAtlas {
+                    layout: texture_atlas_layout,
+                    index: animation_indices.first,
+                }),
                 ..default()
             },
-            texture_atlas: TextureAtlas {
-                layout: texture_atlas_layout,
-                index: animation_indices.first,
-            },
+            transform: Transform::from_xyz(player_location.x, player_location.y, 5.0),
             animation_indices,
             animation_timer: AnimationTimer(Timer::from_seconds(0.075, TimerMode::Repeating)),
         });
@@ -372,24 +362,21 @@ pub fn spawn_player_explosion(
 pub fn animate_player_explosion(
     mut commands: Commands,
     mut explosion: Query<
-        (
-            Entity,
-            &AnimationIndices,
-            &mut AnimationTimer,
-            &mut TextureAtlas,
-        ),
+        (Entity, &AnimationIndices, &mut AnimationTimer, &mut Sprite),
         With<PlayerExplosion>,
     >,
     time: Res<Time>,
 ) {
-    for (entity, indices, mut timer, mut atlas) in &mut explosion {
-        timer.tick(time.delta());
-        if timer.just_finished() {
-            if atlas.index == indices.last {
-                commands.entity(entity).despawn_recursive();
-            } else {
-                atlas.index += 1
-            };
+    for (entity, indices, mut timer, mut sprite) in &mut explosion {
+        if let Some(atlas) = sprite.texture_atlas.as_mut() {
+            timer.tick(time.delta());
+            if timer.just_finished() {
+                if atlas.index == indices.last {
+                    commands.entity(entity).despawn_recursive();
+                } else {
+                    atlas.index += 1
+                };
+            }
         }
     }
 }

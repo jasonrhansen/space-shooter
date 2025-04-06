@@ -1,9 +1,7 @@
 use crate::{VIEWPORT_HEIGHT, VIEWPORT_WIDTH};
 use bevy::{
+    image::{ImageAddressMode, ImageLoaderSettings, ImageSampler, ImageSamplerDescriptor},
     prelude::*,
-    render::texture::{
-        ImageAddressMode, ImageLoaderSettings, ImageSampler, ImageSamplerDescriptor,
-    },
     sprite::Anchor,
 };
 use bevy_asset_loader::prelude::*;
@@ -56,16 +54,13 @@ pub fn spawn_background(
     }
 
     commands.spawn((
-        SpriteBundle {
-            transform: Transform::from_xyz(0.0, 0.0, -1000.0),
-            sprite: Sprite {
-                anchor: Anchor::BottomLeft,
-                rect: Some(Rect::new(0.0, 0.0, VIEWPORT_WIDTH, VIEWPORT_HEIGHT)),
-                ..default()
-            },
-            texture: background_assets.dark_purple_background_image.clone(),
+        Sprite {
+            anchor: Anchor::BottomLeft,
+            rect: Some(Rect::new(0.0, 0.0, VIEWPORT_WIDTH, VIEWPORT_HEIGHT)),
+            image: background_assets.dark_purple_background_image.clone(),
             ..default()
         },
+        Transform::from_xyz(0.0, 0.0, -1000.0),
         Background {},
     ));
 }

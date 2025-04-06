@@ -83,7 +83,7 @@ fn main() {
             Update,
             (
                 handle_physics_active
-                    .run_if(state_changed::<AppState>.or_else(state_changed::<GameState>)),
+                    .run_if(state_changed::<AppState>.or(state_changed::<GameState>)),
                 exit_game,
                 update_paused_state.run_if(in_state(AppState::Running)),
                 toggle_debug_render,
@@ -125,18 +125,22 @@ pub fn update_paused_state(
     }
 }
 
-pub fn setup_physics(mut rapier_config: ResMut<RapierConfiguration>) {
+pub fn setup_physics(mut commands: Commands) {
+    let mut config = RapierConfiguration::new(1.0);
     // Disable gravity
-    rapier_config.gravity = Vec2::ZERO;
+    config.gravity = Vec2::ZERO;
+    commands.spawn(config);
 }
 
 pub fn handle_physics_active(
-    mut rapier_config: ResMut<RapierConfiguration>,
+    mut rapier_config: Query<&mut RapierConfiguration>,
     app_state: Res<State<AppState>>,
     game_state: Res<State<GameState>>,
 ) {
-    rapier_config.physics_pipeline_active =
-        app_state.as_ref() == &AppState::Running && game_state.as_ref() == &GameState::Playing;
+    if let Ok(mut rapier_config) = rapier_config.get_single_mut() {
+        rapier_config.physics_pipeline_active =
+            app_state.as_ref() == &AppState::Running && game_state.as_ref() == &GameState::Playing;
+    }
 }
 
 pub fn toggle_debug_render(

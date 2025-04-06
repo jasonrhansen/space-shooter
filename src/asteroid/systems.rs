@@ -52,11 +52,8 @@ pub fn new_game_spawn_asteroids(
 
         commands
             .spawn(Asteroid)
-            .insert(SpriteBundle {
-                transform: Transform::from_translation(position.extend(0.0)),
-                texture: (*image).clone(),
-                ..default()
-            })
+            .insert(Transform::from_translation(position.extend(0.0)))
+            .insert(Sprite::from_image(image.clone()))
             .insert(RigidBody::Dynamic)
             .insert(Velocity {
                 linvel: Vec2::new(random::<f32>(), random::<f32>()).normalize() * ASTEROID_SPEED,

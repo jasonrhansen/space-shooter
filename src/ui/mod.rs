@@ -26,7 +26,7 @@ impl Plugin for UiPlugin {
                 update_health_text,
                 update_score_text,
                 resume_game_button_action
-                    .run_if(in_state(AppState::Running).and_then(in_state(GameState::Paused))),
+                    .run_if(in_state(AppState::Running).and(in_state(GameState::Paused))),
                 (
                     button_interaction_color,
                     new_game_button_action,
@@ -34,8 +34,8 @@ impl Plugin for UiPlugin {
                 )
                     .run_if(
                         in_state(AppState::Running)
-                            .and_then(in_state(GameState::Paused))
-                            .or_else(in_state(AppState::GameOver)),
+                            .and(in_state(GameState::Paused))
+                            .or(in_state(AppState::GameOver)),
                     ),
             )
                 .in_set(UpdateSet::Ui)

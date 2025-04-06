@@ -27,7 +27,7 @@ impl Plugin for StarPlugin {
             .add_systems(
                 Update,
                 (tick_star_spawn_timer, spawn_stars_over_time)
-                    .run_if(in_state(AppState::Running).and_then(in_state(GameState::Playing))),
+                    .run_if(in_state(AppState::Running).and(in_state(GameState::Playing))),
             );
     }
 }

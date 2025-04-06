@@ -30,7 +30,7 @@ impl Plugin for AsteroidPlugin {
             .add_systems(
                 Update,
                 (wrap_asteroid_movement.in_set(UpdateSet::Movement),)
-                    .run_if(in_state(AppState::Running).and_then(in_state(GameState::Playing))),
+                    .run_if(in_state(AppState::Running).and(in_state(GameState::Playing))),
             );
     }
 }
