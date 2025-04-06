@@ -69,7 +69,7 @@ fn main() {
         )
         .register_type::<Health>()
         .add_event::<GameOver>()
-        .add_systems(Startup, (setup_physics, spawn_camera))
+        .add_systems(Startup, (set_gravity, spawn_camera))
         .add_systems(OnEnter(AppState::Running), (spawn_background, spawn_music))
         .add_plugins((
             AsteroidPlugin,
@@ -125,11 +125,10 @@ pub fn update_paused_state(
     }
 }
 
-pub fn setup_physics(mut commands: Commands) {
-    let mut config = RapierConfiguration::new(1.0);
-    // Disable gravity
-    config.gravity = Vec2::ZERO;
-    commands.spawn(config);
+fn set_gravity(mut config: Query<&mut RapierConfiguration>) {
+    if let Ok(mut config) = config.get_single_mut() {
+        config.gravity = Vec2::ZERO;
+    }
 }
 
 pub fn handle_physics_active(
