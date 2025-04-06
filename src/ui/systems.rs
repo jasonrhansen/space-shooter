@@ -2,7 +2,6 @@ use super::*;
 use super::{components::*, resources::UiAssets};
 use crate::{health::Health, player::components::Player, score::resources::Score};
 use bevy::app::AppExit;
-use bevy::sprite::Anchor;
 use bevy_kira_audio::prelude::*;
 
 pub fn setup(
@@ -12,22 +11,30 @@ pub fn setup(
 ) {
     if score_text.get_single().is_err() {
         commands.spawn((
-            Text2d::new("Score: 0"),
+            Text::new("Score: 0"),
             TextFont::from_font_size(32.0),
             TextLayout::new_with_justify(JustifyText::Right),
-            Anchor::BottomRight,
-            Transform::from_translation(Vec3::new(5.0, 5.0, 0.0)),
+            Node {
+                position_type: PositionType::Absolute,
+                bottom: Val::Px(5.0),
+                right: Val::Px(5.0),
+                ..default()
+            },
             ScoreText,
         ));
     }
 
     if health_text.get_single().is_err() {
         commands.spawn((
-            Text2d::new("Health: 100%"),
+            Text::new("Health: 100%"),
             TextFont::from_font_size(32.0),
             TextLayout::new_with_justify(JustifyText::Left),
-            Anchor::BottomLeft,
-            Transform::from_translation(Vec3::new(5.0, 5.0, 0.0)),
+            Node {
+                position_type: PositionType::Absolute,
+                bottom: Val::Px(5.0),
+                left: Val::Px(5.0),
+                ..default()
+            },
             HealthText,
         ));
     }
@@ -69,7 +76,7 @@ pub fn spawn_paused_screen(mut commands: Commands, ui_assets: Res<UiAssets>, aud
             PausedMenu,
         ))
         .with_children(|parent| {
-            parent.spawn((Text2d::new("Paused"), TextFont::from_font_size(100.0)));
+            parent.spawn((Text::new("Paused"), TextFont::from_font_size(100.0)));
             parent
                 .spawn((
                     Button {},
@@ -84,7 +91,7 @@ pub fn spawn_paused_screen(mut commands: Commands, ui_assets: Res<UiAssets>, aud
                     ResumeGameButton,
                 ))
                 .with_children(|parent| {
-                    parent.spawn((Text2d::new("Resume Game"), TextFont::from_font_size(50.0)));
+                    parent.spawn((Text::new("Resume Game"), TextFont::from_font_size(50.0)));
                 });
 
             parent
@@ -101,7 +108,7 @@ pub fn spawn_paused_screen(mut commands: Commands, ui_assets: Res<UiAssets>, aud
                     NewGameButton,
                 ))
                 .with_children(|parent| {
-                    parent.spawn((Text2d::new("New Game"), TextFont::from_font_size(50.0)));
+                    parent.spawn((Text::new("New Game"), TextFont::from_font_size(50.0)));
                 });
 
             parent
@@ -118,7 +125,7 @@ pub fn spawn_paused_screen(mut commands: Commands, ui_assets: Res<UiAssets>, aud
                     QuitGameButton,
                 ))
                 .with_children(|parent| {
-                    parent.spawn((Text2d::new("Quit"), TextFont::from_font_size(50.0)));
+                    parent.spawn((Text::new("Quit"), TextFont::from_font_size(50.0)));
                 });
         });
 
@@ -209,7 +216,7 @@ pub fn spawn_game_over_screen(mut commands: Commands) {
             GameOverMenu,
         ))
         .with_children(|parent| {
-            parent.spawn((Text2d::new("Game Over!"), TextFont::from_font_size(100.0)));
+            parent.spawn((Text::new("Game Over!"), TextFont::from_font_size(100.0)));
             parent
                 .spawn((
                     Button {},
@@ -224,7 +231,7 @@ pub fn spawn_game_over_screen(mut commands: Commands) {
                     NewGameButton,
                 ))
                 .with_children(|parent| {
-                    parent.spawn((Text2d::new("New Game"), TextFont::from_font_size(50.0)));
+                    parent.spawn((Text::new("New Game"), TextFont::from_font_size(50.0)));
                 });
 
             parent
