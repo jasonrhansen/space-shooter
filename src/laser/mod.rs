@@ -4,7 +4,7 @@ pub mod resources;
 pub mod systems;
 
 use self::{events::SpawnLaser, resources::LaserAssets};
-use crate::{state::GameState, AppState, UpdateSet};
+use crate::{AppState, UpdateSet, state::GameState};
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 use systems::*;

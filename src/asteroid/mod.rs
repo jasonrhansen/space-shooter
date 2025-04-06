@@ -3,7 +3,7 @@ pub mod resources;
 pub mod systems;
 
 use self::resources::AsteroidAssets;
-use crate::{state::GameState, AppState, UpdateSet};
+use crate::{AppState, UpdateSet, state::GameState};
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 use systems::*;

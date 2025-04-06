@@ -25,11 +25,11 @@ pub mod star;
 pub mod state;
 pub mod ui;
 
-use background::{spawn_background, BackgroundAssets};
+use background::{BackgroundAssets, spawn_background};
 use camera::spawn_camera;
 use health::Health;
 use laser::LaserPlugin;
-use music::{spawn_music, MusicAssets};
+use music::{MusicAssets, spawn_music};
 use player::PlayerPlugin;
 use score::ScorePlugin;
 use star::StarPlugin;

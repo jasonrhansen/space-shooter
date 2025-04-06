@@ -1,7 +1,7 @@
+use super::LASER_SPEED;
 use super::components::*;
 use super::events::SpawnLaser;
 use super::resources::LaserAssets;
-use super::LASER_SPEED;
 use crate::asteroid::components::Asteroid;
 use crate::collision_groups::*;
 use crate::{VIEWPORT_HEIGHT, VIEWPORT_WIDTH};

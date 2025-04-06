@@ -7,7 +7,7 @@ use self::{
     events::PlayerThrusterChanged,
     resources::{PlayerAssets, PlayerCollisionConvexShapes},
 };
-use crate::{state::GameState, AppState, UpdateSet};
+use crate::{AppState, UpdateSet, state::GameState};
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 use systems::*;

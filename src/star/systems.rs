@@ -1,8 +1,8 @@
 use super::components::Star;
 use super::*;
-use crate::collision_groups::*;
 use crate::VIEWPORT_HEIGHT;
 use crate::VIEWPORT_WIDTH;
+use crate::collision_groups::*;
 use bevy_rapier2d::prelude::*;
 use rand::random;
 

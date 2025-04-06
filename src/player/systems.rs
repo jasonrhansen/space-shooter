@@ -1,11 +1,11 @@
 use super::events::PlayerThrusterChanged;
 use super::resources::{PlayerAssets, PlayerCollisionConvexShapes};
-use super::{components::*, PlayerState, PLAYER_ACCELERATION, PLAYER_MAX_SPEED, PLAYER_SIZE};
+use super::{PLAYER_ACCELERATION, PLAYER_MAX_SPEED, PLAYER_SIZE, PlayerState, components::*};
 use crate::asteroid::components::Asteroid;
 use crate::health::Health;
-use crate::{collision_groups::*, GameOver};
-use crate::{laser::events::SpawnLaser, score::resources::Score, star::components::Star};
+use crate::{GameOver, collision_groups::*};
 use crate::{VIEWPORT_HEIGHT, VIEWPORT_WIDTH};
+use crate::{laser::events::SpawnLaser, score::resources::Score, star::components::Star};
 use bevy::prelude::*;
 use bevy_kira_audio::prelude::*;
 use bevy_rapier2d::prelude::*;

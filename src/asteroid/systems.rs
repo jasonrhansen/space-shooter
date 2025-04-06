@@ -1,10 +1,10 @@
-use super::components::*;
-use super::resources::AsteroidAssets;
-use super::resources::AsteroidCollisionConvexShapes;
 use super::ASTEROID_SIZE;
 use super::ASTEROID_SPEED;
 use super::NUM_ASTEROIDS;
 use super::PLAYER_SAFE_RADIUS;
+use super::components::*;
+use super::resources::AsteroidAssets;
+use super::resources::AsteroidCollisionConvexShapes;
 use crate::VIEWPORT_HEIGHT;
 use crate::VIEWPORT_WIDTH;
 use bevy::prelude::*;
