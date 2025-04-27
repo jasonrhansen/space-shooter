@@ -70,7 +70,8 @@ pub fn new_game_spawn_asteroids(
                         )
                     })
                     .collect(),
-            ));
+            ))
+            .insert(CollisionEventsEnabled);
     }
 }
 

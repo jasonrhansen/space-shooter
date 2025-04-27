@@ -23,7 +23,7 @@ pub fn new_game_spawn_player(
     next_player_state.set(PlayerState::Alive);
 
     for entity in player.iter() {
-        commands.entity(entity).despawn_recursive();
+        commands.entity(entity).despawn();
     }
 
     let player_shapes = &collision_shapes.player_shapes;
@@ -98,7 +98,7 @@ pub fn player_input(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     time: Res<Time>,
 ) {
-    if let Ok((mut player, transform)) = player.get_single_mut() {
+    if let Ok((mut player, transform)) = player.single_mut() {
         if keyboard_input.pressed(KeyCode::ArrowLeft) || keyboard_input.pressed(KeyCode::KeyA) {
             player.direction = player.direction.rotate(Vec2::from_angle(PI / 32.0));
         }
@@ -111,7 +111,7 @@ pub fn player_input(
             player.velocity += v;
             player.velocity = player.velocity.clamp_length_max(PLAYER_MAX_SPEED);
 
-            thruster_writer.send(PlayerThrusterChanged::Forward);
+            thruster_writer.write(PlayerThrusterChanged::Forward);
         } else if keyboard_input.pressed(KeyCode::ArrowDown)
             || keyboard_input.pressed(KeyCode::KeyS)
         {
@@ -119,14 +119,14 @@ pub fn player_input(
             player.velocity -= v;
             player.velocity = player.velocity.clamp_length_max(PLAYER_MAX_SPEED);
 
-            thruster_writer.send(PlayerThrusterChanged::Backward);
+            thruster_writer.write(PlayerThrusterChanged::Backward);
         } else {
-            thruster_writer.send(PlayerThrusterChanged::None);
+            thruster_writer.write(PlayerThrusterChanged::None);
         }
 
         if keyboard_input.just_pressed(KeyCode::Space) {
             let Vec2 { x, y } = transform.translation.xy() + (player.direction * PLAYER_SIZE / 2.0);
-            spawn_laser_writer.send(SpawnLaser {
+            spawn_laser_writer.write(SpawnLaser {
                 x,
                 y,
                 direction: player.direction,
@@ -139,7 +139,7 @@ pub fn player_movement(
     mut player: Query<(&Player, &mut Transform), With<Player>>,
     time: Res<Time>,
 ) {
-    if let Ok((player, mut transform)) = player.get_single_mut() {
+    if let Ok((player, mut transform)) = player.single_mut() {
         transform.translation +=
             Vec3::new(player.velocity.x, player.velocity.y, 0.0) * time.delta_secs();
 
@@ -155,7 +155,7 @@ pub fn wrap_player_movement(mut player: Query<&mut Transform, With<Player>>) {
     let y_min = -half_player_size;
     let y_max = VIEWPORT_HEIGHT + half_player_size;
 
-    if let Ok(mut transform) = player.get_single_mut() {
+    if let Ok(mut transform) = player.single_mut() {
         if transform.translation.x < x_min {
             transform.translation.x = x_max - 1.0;
         } else if transform.translation.x > x_max {
@@ -177,7 +177,7 @@ pub fn player_hit_asteroid(
     mut next_player_state: ResMut<NextState<PlayerState>>,
 ) {
     if let Ok((player_entity, mut player, colliding_entities, mut player_health)) =
-        player.get_single_mut()
+        player.single_mut()
     {
         if !player.take_damage {
             return;
@@ -208,7 +208,7 @@ pub fn player_death(
     player_assets: Res<PlayerAssets>,
 ) {
     for player_entity in player.iter() {
-        thruster_writer.send(PlayerThrusterChanged::None);
+        thruster_writer.write(PlayerThrusterChanged::None);
 
         audio.play(player_assets.explosion_sound.clone());
 
@@ -226,12 +226,12 @@ pub fn player_death_timer(
     mut player: Query<(Entity, &mut DeathTimer), With<Player>>,
     time: Res<Time>,
 ) {
-    if let Ok((player_entity, mut death_timer)) = player.get_single_mut() {
+    if let Ok((player_entity, mut death_timer)) = player.single_mut() {
         death_timer.tick(time.delta());
 
         if death_timer.just_finished() {
-            commands.entity(player_entity).despawn_recursive();
-            game_over_writer.send(GameOver);
+            commands.entity(player_entity).despawn();
+            game_over_writer.write(GameOver);
         }
     }
 }
@@ -241,7 +241,7 @@ pub fn player_damage_timer(
     mut player: Query<(Entity, &mut Player, &mut DamageTimer), With<Player>>,
     time: Res<Time>,
 ) {
-    if let Ok((player_entity, mut player, mut damage_timer)) = player.get_single_mut() {
+    if let Ok((player_entity, mut player, mut damage_timer)) = player.single_mut() {
         damage_timer.tick(time.delta());
 
         if damage_timer.just_finished() {
@@ -259,7 +259,7 @@ pub fn player_hit_star(
     audio: Res<Audio>,
     player_assets: Res<PlayerAssets>,
 ) {
-    if let Ok(colliding_entities) = player_colliding_entities.get_single() {
+    if let Ok(colliding_entities) = player_colliding_entities.single() {
         for star_entity in stars.iter() {
             if colliding_entities.contains(&star_entity) {
                 score.value += 1;
@@ -278,24 +278,24 @@ pub fn thruster_visibility(
     backward_thruster: Query<&BackwardThruster>,
 ) {
     if let Some(event) = thrust_changed_events.read().last() {
-        if let Ok(children) = player_children.get_single() {
+        if let Ok(children) = player_children.single() {
             match event {
                 PlayerThrusterChanged::Forward => {
-                    for &child in children.iter() {
+                    for child in children.iter() {
                         if forward_thruster.contains(child) {
                             commands.entity(child).insert(Visibility::Inherited);
                         }
                     }
                 }
                 PlayerThrusterChanged::Backward => {
-                    for &child in children.iter() {
+                    for child in children.iter() {
                         if backward_thruster.contains(child) {
                             commands.entity(child).insert(Visibility::Inherited);
                         }
                     }
                 }
                 PlayerThrusterChanged::None => {
-                    for &child in children.iter() {
+                    for child in children.iter() {
                         if forward_thruster.contains(child) {
                             commands.entity(child).insert(Visibility::Hidden);
                         }
@@ -314,7 +314,7 @@ pub fn thruster_sound(
     thruster_sound: Query<&ThrusterSound, With<Player>>,
     mut audio_instances: ResMut<Assets<AudioInstance>>,
 ) {
-    if let Ok(thruster_handle) = thruster_sound.get_single() {
+    if let Ok(thruster_handle) = thruster_sound.single() {
         if let Some(instance) = audio_instances.get_mut(&thruster_handle.0) {
             if let Some(event) = thrust_changed_events.read().last() {
                 match event {
@@ -336,7 +336,7 @@ pub fn spawn_player_explosion(
     player_assets: Res<PlayerAssets>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    if let Ok(player_global_transform) = player.get_single() {
+    if let Ok(player_global_transform) = player.single() {
         let image = player_assets.explosion_texture.clone();
         let layout = TextureAtlasLayout::from_grid(UVec2::new(276, 306), 5, 2, None, None);
         let texture_atlas_layout = texture_atlas_layouts.add(layout);
@@ -372,7 +372,7 @@ pub fn animate_player_explosion(
             timer.tick(time.delta());
             if timer.just_finished() {
                 if atlas.index == indices.last {
-                    commands.entity(entity).despawn_recursive();
+                    commands.entity(entity).despawn();
                 } else {
                     atlas.index += 1
                 };

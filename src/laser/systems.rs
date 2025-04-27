@@ -33,7 +33,8 @@ pub fn spawn_lasers(
             ))
             .insert(RigidBody::Dynamic)
             .insert(Collider::round_rectangle(4.0, 25.0, 0.5))
-            .insert(CollisionLayers::new(GameLayer::Laser, [GameLayer::Default]));
+            .insert(CollisionLayers::new(GameLayer::Laser, [GameLayer::Default]))
+            .insert(CollisionEventsEnabled);
     });
 }
 

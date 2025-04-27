@@ -8,7 +8,7 @@ use bevy::input::common_conditions::input_toggle_active;
 use bevy::prelude::*;
 use bevy::window::PresentMode;
 use bevy_asset_loader::prelude::*;
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
+use bevy_inspector_egui::{bevy_egui::EguiPlugin, quick::WorldInspectorPlugin};
 use bevy_kira_audio::AudioPlugin;
 
 pub mod asteroid;
@@ -56,6 +56,9 @@ fn main() {
             AudioPlugin,
             PhysicsPlugins::default(),
             // PhysicsDebugPlugin::default(),
+            EguiPlugin {
+                enable_multipass_for_primary_context: true,
+            },
             WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::F2)),
         ))
         .insert_resource(Gravity(Vec2::ZERO)) // We don't want any gravity.
@@ -97,7 +100,7 @@ pub struct GameOver;
 
 pub fn exit_game(mut exit_writer: EventWriter<AppExit>, keyboard_input: Res<ButtonInput<KeyCode>>) {
     if keyboard_input.just_pressed(KeyCode::Escape) {
-        exit_writer.send(AppExit::Success);
+        exit_writer.write(AppExit::Success);
     }
 }
 

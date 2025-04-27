@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 # Use dymamic linking during development to reduce compile times
-bevy = { version = "0.15", default-features = false, features = [
+bevy = { version = "0.16", default-features = false, features = [
   "bevy_asset",
   "bevy_core_pipeline",
   "bevy_gilrs",
@@ -21,10 +21,10 @@ bevy = { version = "0.15", default-features = false, features = [
   "wayland",
   "dynamic_linking"
 ] }
-bevy-inspector-egui = "0.30"
-bevy_asset_loader = "0.22"
-bevy_kira_audio = "0.22"
-avian2d = { version = "0.2", default-features = false, features = ["2d", "f32", "parry-f32", "debug-plugin"] }
+bevy-inspector-egui = "0.31"
+bevy_asset_loader = { git = "https://github.com/NiklasEi/bevy_asset_loader", branch = "bevy_main" }
+bevy_kira_audio = "0.23"
+avian2d = { git = "https://github.com/Jondolf/avian", default-features = false, features = ["2d", "f32", "parry-f32", "debug-plugin"] }
 rand = "0.9"
 
 # Enable a small amount of optimization in debug mode
