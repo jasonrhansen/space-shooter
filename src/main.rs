@@ -2,6 +2,7 @@
 
 use crate::state::AppState;
 use asteroid::AsteroidPlugin;
+use avian2d::prelude::*;
 use bevy::app::AppExit;
 use bevy::input::common_conditions::input_toggle_active;
 use bevy::prelude::*;
@@ -9,16 +10,14 @@ use bevy::window::PresentMode;
 use bevy_asset_loader::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_kira_audio::AudioPlugin;
-use bevy_rapier2d::prelude::*;
-use bevy_rapier2d::{prelude::RapierConfiguration, render::DebugRenderContext};
 
 pub mod asteroid;
 pub mod background;
 pub mod camera;
-pub mod collision_groups;
 pub mod health;
 pub mod laser;
 pub mod music;
+pub mod physics_layer;
 pub mod player;
 pub mod score;
 pub mod star;
@@ -40,7 +39,7 @@ pub const VIEWPORT_WIDTH: f32 = 1280.0;
 pub const VIEWPORT_HEIGHT: f32 = 720.0;
 
 // A ConvexShape is a list of vertices that define a convex shape.
-pub type ConvexShape = Box<[Vect]>;
+pub type ConvexShape = Vec<Vec2>;
 
 fn main() {
     App::new()
@@ -55,10 +54,11 @@ fn main() {
                 ..default()
             }),
             AudioPlugin,
-            RapierPhysicsPlugin::<NoUserData>::default(),
-            RapierDebugRenderPlugin::default().disabled(),
+            PhysicsPlugins::default(),
+            // PhysicsDebugPlugin::default(),
             WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::F2)),
         ))
+        .insert_resource(Gravity(Vec2::ZERO)) // We don't want any gravity.
         .init_state::<AppState>()
         .init_state::<GameState>()
         .add_loading_state(
@@ -69,7 +69,7 @@ fn main() {
         )
         .register_type::<Health>()
         .add_event::<GameOver>()
-        .add_systems(Startup, (set_gravity, spawn_camera))
+        .add_systems(Startup, spawn_camera)
         .add_systems(OnEnter(AppState::Running), (spawn_background, spawn_music))
         .add_plugins((
             AsteroidPlugin,
@@ -86,7 +86,6 @@ fn main() {
                     .run_if(state_changed::<AppState>.or(state_changed::<GameState>)),
                 exit_game,
                 update_paused_state.run_if(in_state(AppState::Running)),
-                toggle_debug_render,
             ),
         )
         .add_systems(PostUpdate, handle_game_over)
@@ -125,29 +124,15 @@ pub fn update_paused_state(
     }
 }
 
-fn set_gravity(mut config: Query<&mut RapierConfiguration>) {
-    if let Ok(mut config) = config.get_single_mut() {
-        config.gravity = Vec2::ZERO;
-    }
-}
-
 pub fn handle_physics_active(
-    mut rapier_config: Query<&mut RapierConfiguration>,
+    mut time: ResMut<Time<Physics>>,
     app_state: Res<State<AppState>>,
     game_state: Res<State<GameState>>,
 ) {
-    if let Ok(mut rapier_config) = rapier_config.get_single_mut() {
-        rapier_config.physics_pipeline_active =
-            app_state.as_ref() == &AppState::Running && game_state.as_ref() == &GameState::Playing;
-    }
-}
-
-pub fn toggle_debug_render(
-    mut debug_context: ResMut<DebugRenderContext>,
-    keyboard_input: Res<ButtonInput<KeyCode>>,
-) {
-    if keyboard_input.just_pressed(KeyCode::F3) {
-        debug_context.enabled = !debug_context.enabled;
+    if app_state.as_ref() == &AppState::Running && game_state.as_ref() == &GameState::Playing {
+        time.unpause();
+    } else {
+        time.pause();
     }
 }
 

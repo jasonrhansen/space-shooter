@@ -2,8 +2,8 @@ use super::components::Star;
 use super::*;
 use crate::VIEWPORT_HEIGHT;
 use crate::VIEWPORT_WIDTH;
-use crate::collision_groups::*;
-use bevy_rapier2d::prelude::*;
+use crate::physics_layer::GameLayer;
+use avian2d::prelude::*;
 use rand::random;
 
 pub fn new_game_spawn_stars(
@@ -46,9 +46,6 @@ fn spawn_star(position: Vec2, commands: &mut Commands, star_assets: &Res<StarAss
         .insert(Sprite::from_image(star_assets.star_texture.clone()))
         .insert(Transform::from_xyz(position.x, position.y, -9.0).with_scale(Vec3::splat(0.5)))
         .insert(Sensor)
-        .insert(Collider::ball(STAR_SIZE / 2.0))
-        .insert(CollisionGroups::new(
-            STAR_COLLISION_GROUP,
-            PLAYER_COLLISION_GROUP,
-        ));
+        .insert(Collider::circle(STAR_SIZE / 2.0))
+        .insert(CollisionLayers::new(GameLayer::Star, [GameLayer::Player]));
 }

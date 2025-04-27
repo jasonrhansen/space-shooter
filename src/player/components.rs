@@ -1,9 +1,6 @@
+use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_kira_audio::AudioInstance;
-use bevy_rapier2d::{
-    dynamics::RigidBody,
-    geometry::{ActiveEvents, Collider, CollidingEntities, CollisionGroups},
-};
 
 use crate::health::Health;
 
@@ -41,8 +38,7 @@ pub struct PlayerBundle {
 pub struct PlayerCollisionBundle {
     pub rigid_body: RigidBody,
     pub collider: Collider,
-    pub collision_groups: CollisionGroups,
-    pub active_events: ActiveEvents,
+    pub collision_layers: CollisionLayers,
     pub colliding_entities: CollidingEntities,
 }
 

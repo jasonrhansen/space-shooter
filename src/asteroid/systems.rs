@@ -7,8 +7,8 @@ use super::resources::AsteroidAssets;
 use super::resources::AsteroidCollisionConvexShapes;
 use crate::VIEWPORT_HEIGHT;
 use crate::VIEWPORT_WIDTH;
+use avian2d::prelude::*;
 use bevy::prelude::*;
-use bevy_rapier2d::prelude::*;
 use rand::random;
 use std::f32::consts::PI;
 
@@ -55,10 +55,10 @@ pub fn new_game_spawn_asteroids(
             .insert(Transform::from_translation(position.extend(0.0)))
             .insert(Sprite::from_image(image.clone()))
             .insert(RigidBody::Dynamic)
-            .insert(Velocity {
-                linvel: Vec2::new(random::<f32>(), random::<f32>()).normalize() * ASTEROID_SPEED,
-                angvel: random::<f32>() * PI - PI,
-            })
+            .insert(LinearVelocity(
+                Vec2::new(random::<f32>(), random::<f32>()).normalize() * ASTEROID_SPEED,
+            ))
+            .insert(AngularVelocity(random::<f32>() * PI - PI))
             .insert(Collider::compound(
                 asteroid_shapes[i % NUM_ASTEROIDS]
                     .iter()
@@ -66,7 +66,7 @@ pub fn new_game_spawn_asteroids(
                         (
                             Vec2::ZERO,
                             0.0,
-                            Collider::convex_hull(vertices.as_ref()).unwrap(),
+                            Collider::convex_hull(vertices.clone()).unwrap(),
                         )
                     })
                     .collect(),

@@ -1,14 +1,15 @@
 use super::events::PlayerThrusterChanged;
 use super::resources::{PlayerAssets, PlayerCollisionConvexShapes};
 use super::{PLAYER_ACCELERATION, PLAYER_MAX_SPEED, PLAYER_SIZE, PlayerState, components::*};
+use crate::GameOver;
 use crate::asteroid::components::Asteroid;
 use crate::health::Health;
-use crate::{GameOver, collision_groups::*};
+use crate::physics_layer::GameLayer;
 use crate::{VIEWPORT_HEIGHT, VIEWPORT_WIDTH};
 use crate::{laser::events::SpawnLaser, score::resources::Score, star::components::Star};
+use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_kira_audio::prelude::*;
-use bevy_rapier2d::prelude::*;
 use std::f32::consts::PI;
 
 pub fn new_game_spawn_player(
@@ -47,16 +48,15 @@ pub fn new_game_spawn_player(
                             (
                                 Vec2::ZERO,
                                 0.0,
-                                Collider::convex_hull(vertices.as_ref()).unwrap(),
+                                Collider::convex_hull(vertices.clone()).unwrap(),
                             )
                         })
                         .collect(),
                 ),
-                collision_groups: CollisionGroups::new(
-                    PLAYER_COLLISION_GROUP,
-                    !LASER_COLLISION_GROUP,
+                collision_layers: CollisionLayers::new(
+                    GameLayer::Player,
+                    [GameLayer::Default, GameLayer::Star],
                 ),
-                active_events: ActiveEvents::COLLISION_EVENTS | ActiveEvents::CONTACT_FORCE_EVENTS,
                 colliding_entities: CollidingEntities::default(),
             },
             thruster_sound: ThrusterSound(
@@ -184,7 +184,7 @@ pub fn player_hit_asteroid(
         }
 
         for colliding_entity in colliding_entities.iter() {
-            if asteroids.contains(colliding_entity) {
+            if asteroids.contains(*colliding_entity) {
                 player_health.percent = player_health.percent.saturating_sub(10);
 
                 if player_health.percent == 0 {
@@ -261,7 +261,7 @@ pub fn player_hit_star(
 ) {
     if let Ok(colliding_entities) = player_colliding_entities.get_single() {
         for star_entity in stars.iter() {
-            if colliding_entities.contains(star_entity) {
+            if colliding_entities.contains(&star_entity) {
                 score.value += 1;
                 audio.play(player_assets.star_sound.clone());
                 commands.entity(star_entity).despawn();

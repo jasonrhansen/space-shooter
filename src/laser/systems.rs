@@ -3,11 +3,11 @@ use super::components::*;
 use super::events::SpawnLaser;
 use super::resources::LaserAssets;
 use crate::asteroid::components::Asteroid;
-use crate::collision_groups::*;
+use crate::physics_layer::*;
 use crate::{VIEWPORT_HEIGHT, VIEWPORT_WIDTH};
+use avian2d::prelude::*;
 use bevy::prelude::*;
 use bevy_kira_audio::prelude::*;
-use bevy_rapier2d::prelude::*;
 use std::f32::consts::PI;
 
 pub fn spawn_lasers(
@@ -28,16 +28,12 @@ pub fn spawn_lasers(
             .spawn(Laser)
             .insert(Sprite::from_image(laser_assets.laser_texture.clone()))
             .insert(transform)
-            .insert(Velocity::linear(
+            .insert(LinearVelocity(
                 spawn_laser.direction.normalize() * LASER_SPEED,
             ))
             .insert(RigidBody::Dynamic)
-            .insert(Collider::round_cuboid(4.0, 25.0, 0.5))
-            .insert(CollisionGroups::new(
-                LASER_COLLISION_GROUP,
-                !(PLAYER_COLLISION_GROUP | LASER_COLLISION_GROUP),
-            ))
-            .insert(ActiveEvents::COLLISION_EVENTS);
+            .insert(Collider::round_rectangle(4.0, 25.0, 0.5))
+            .insert(CollisionLayers::new(GameLayer::Laser, [GameLayer::Default]));
     });
 }
 
@@ -70,30 +66,33 @@ pub fn despawn_offscreen_lasers(
 
 pub fn laser_hit_asteroid(
     mut commands: Commands,
-    mut collision_events: EventReader<CollisionEvent>,
+    mut collision_started_events: EventReader<CollisionStarted>,
+    mut collision_ended_events: EventReader<CollisionEnded>,
     lasers: Query<Entity, With<Laser>>,
     asteroids: Query<Entity, With<Asteroid>>,
 ) {
-    for collision_event in collision_events.read() {
-        let (is_started, entity1, entity2) = match collision_event {
-            CollisionEvent::Started(entity1, entity2, _flags) => (true, *entity1, *entity2),
-            CollisionEvent::Stopped(entity1, entity2, _flags) => (false, *entity1, *entity2),
-        };
-        for laser_entity in lasers.iter() {
-            for asteroid_entity in asteroids.iter() {
-                if entity1 == laser_entity && entity2 == asteroid_entity
-                    || entity1 == asteroid_entity && entity2 == laser_entity
-                {
-                    if is_started {
-                        // When colliding into an asteroid we don't want the laser to be visible.
-                        // but we still want it to continue the collision to exert a force.
-                        commands.entity(laser_entity).remove::<Sprite>();
-                    } else {
-                        // When done colliding we can despawn the laser.
-                        commands.entity(laser_entity).despawn();
-                    }
-                }
-            }
+    let laser_and_asteroid = |entity1: &Entity, entity2: &Entity| {
+        if lasers.contains(*entity1) && asteroids.contains(*entity2) {
+            Some((*entity1, *entity2))
+        } else if lasers.contains(*entity2) && asteroids.contains(*entity1) {
+            Some((*entity2, *entity1))
+        } else {
+            None
+        }
+    };
+
+    for CollisionStarted(entity1, entity2) in collision_started_events.read() {
+        if let Some((laser_entity, _)) = laser_and_asteroid(entity1, entity2) {
+            // When colliding into an asteroid we don't want the laser to be visible.
+            // but we still want it to continue the collision to exert a force.
+            commands.entity(laser_entity).remove::<Sprite>();
+        }
+    }
+
+    for CollisionEnded(entity1, entity2) in collision_ended_events.read() {
+        if let Some((laser_entity, _)) = laser_and_asteroid(entity1, entity2) {
+            // When done colliding we can despawn the laser.
+            commands.entity(laser_entity).despawn();
         }
     }
 }
