@@ -24,7 +24,7 @@ bevy = { version = "0.16", default-features = false, features = [
 bevy-inspector-egui = "0.31"
 bevy_asset_loader = { git = "https://github.com/NiklasEi/bevy_asset_loader", branch = "bevy_main" }
 bevy_kira_audio = "0.23"
-avian2d = { git = "https://github.com/Jondolf/avian", default-features = false, features = ["2d", "f32", "parry-f32", "debug-plugin"] }
+avian2d = { version = "0.3", default-features = false, features = ["2d", "f32", "parry-f32", "debug-plugin"] }
 rand = "0.9"
 
 # Enable a small amount of optimization in debug mode
