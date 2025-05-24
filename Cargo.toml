@@ -22,7 +22,7 @@ bevy = { version = "0.16", default-features = false, features = [
   "dynamic_linking"
 ] }
 bevy-inspector-egui = "0.31"
-bevy_asset_loader = { git = "https://github.com/NiklasEi/bevy_asset_loader", branch = "bevy_main" }
+bevy_asset_loader = "0.23.0"
 bevy_kira_audio = "0.23"
 avian2d = { version = "0.3", default-features = false, features = ["2d", "f32", "parry-f32", "debug-plugin"] }
 rand = "0.9"
